@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Ubuntu:300,300italic,400,400italic,700,700italic|Ubuntu Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.6.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.6.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="工欲善其事必先利其器。在理解了操作系统、编译原理等知识之后，选择自己的代码编辑器以及掌握构建工具、shell脚本、编译器、调试器、性能分析器等工具就是重中之重了。我选择了以vim为基本编辑器，以CMake为构建工具，然后在不同的平台上选择不同的shell脚本和编译器。 之所以有这样的选择，主要是因为在服务器端编程，很多情况下你没有办法物理上接触到服务器的，只能通过ssh方式连接到服务器。这也包括W">
+<meta property="og:type" content="article">
+<meta property="og:title" content="开发工具链">
+<meta property="og:url" content="https://blog.svandex.cn/2017/08/16/tool-chain/index.html">
+<meta property="og:site_name" content="斯旺达克">
+<meta property="og:description" content="工欲善其事必先利其器。在理解了操作系统、编译原理等知识之后，选择自己的代码编辑器以及掌握构建工具、shell脚本、编译器、调试器、性能分析器等工具就是重中之重了。我选择了以vim为基本编辑器，以CMake为构建工具，然后在不同的平台上选择不同的shell脚本和编译器。 之所以有这样的选择，主要是因为在服务器端编程，很多情况下你没有办法物理上接触到服务器的，只能通过ssh方式连接到服务器。这也包括W">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-12-24T13:15:17.185Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="开发工具链">
+<meta name="twitter:description" content="工欲善其事必先利其器。在理解了操作系统、编译原理等知识之后，选择自己的代码编辑器以及掌握构建工具、shell脚本、编译器、调试器、性能分析器等工具就是重中之重了。我选择了以vim为基本编辑器，以CMake为构建工具，然后在不同的平台上选择不同的shell脚本和编译器。 之所以有这样的选择，主要是因为在服务器端编程，很多情况下你没有办法物理上接触到服务器的，只能通过ssh方式连接到服务器。这也包括W">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.svandex.cn/2017/08/16/tool-chain/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>开发工具链 | 斯旺达克</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">斯旺达克</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">游戏、历史、电子</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-书单">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/booklist/" rel="section"><i class="menu-item-icon fa fa-fw fa-book"></i> <br>书单</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-游戏">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/game/" rel="section"><i class="menu-item-icon fa fa-fw fa-gamepad"></i> <br>游戏</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2017/08/16/tool-chain/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="斯旺达克">
+      <meta itemprop="description" content="感受生命">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="斯旺达克">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">开发工具链
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-08-16 14:12:17" itemprop="dateCreated datePublished" datetime="2017-08-16T14:12:17+08:00">2017-08-16</time>
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon">
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>工欲善其事必先利其器。在理解了操作系统、编译原理等知识之后，选择自己的代码编辑器以及掌握构建工具、shell脚本、编译器、调试器、性能分析器等工具就是重中之重了。我选择了以vim为基本编辑器，以CMake为构建工具，然后在不同的平台上选择不同的shell脚本和编译器。</p>
+<p>之所以有这样的选择，主要是因为在服务器端编程，很多情况下你没有办法物理上接触到服务器的，只能通过ssh方式连接到服务器。这也包括Windows服务器，在Windows10之后有了openssh支持方便了很多。所以后续阅读中请以ssh连接为背景来理解这些工具。</p>
+<h1 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h1><p>关于<a href="http://www.vim.org/" target="_blank" rel="noopener">vim</a>的使用方法，我就不着重介绍了，网络上有很多的资源。我主要介绍一下自己的配置方法。</p>
+<p>我这里只想提下如果你的vimrc配置文件写错了，在进入vim时候会出现一片空白通知你配置文件错误，但是又没有详细说明。这时候用vim -D进入开发者debug模式，可以逐行运行配置文件中的语句，对于查错非常有帮助。还有提醒一点是ssh连接到Windows 10后，默认cmd的编码方式不是utf-8，要通过命令<code>chcp 65001</code>切换，这对于后续工具使用非常重要。</p>
+<a id="more"></a>
+<p>关于vim的使用有一些很好的链接：</p>
+<ul>
+<li><a href="https://github.com/skywind3000/awesome-cheatsheets/blob/master/editors/vim.txt" target="_blank" rel="noopener">vim中文速查手册</a>，常见操作的中文解释，忘了可以速查</li>
+<li><a href="https://github.com/mhinz/vim-galore" target="_blank" rel="noopener">vim使用手册</a>有中文版的<a href="https://github.com/wsdjeg/vim-galore-zh_cn" target="_blank" rel="noopener">翻译</a>，比较系统的介绍了vim的使用</li>
+<li><a href="https://zhuanlan.zhihu.com/vimrc" target="_blank" rel="noopener">vim知乎专栏</a>，这是韦易笑等大牛一起开的知乎专栏，有很多不错的文章</li>
+</ul>
+<h2 id="vim在windows下的编译"><a href="#vim在windows下的编译" class="headerlink" title="vim在windows下的编译"></a>vim在windows下的编译</h2><p>Windows下的vim编译问题。再git clone完vim源代码之后，需要注意两个文件：</p>
+<ul>
+<li>READMEdir文件夹下的README_dos.txt文件，告诉你如何配置vim的运行环境；</li>
+<li>src文件夹下的文件INSTALLpc.txt，告诉你如何编译vim二进制文件</li>
+</ul>
+<p>需要强调的是如果要编译支持python需要用到命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmake -f Make_mvc.mak PYTHON3=\path\to\python3 DYNAMIC_PYTHON3=yes PYTHON3_VER=python3_version</span><br></pre></td></tr></table></figure>
+<p>这样可以在src文件中生成所有的二进制文件。然后需要在你想要安装的vim文件夹中拷贝这些二进制文件，并且要把源代码中的runtime文件夹也要拷贝到二进制文件位置，然后设置环境变了$VIM为该位置，具体可以看README_dos.txt和INSTALLpc.txt中的介绍。</p>
+<h2 id="vim的配置"><a href="#vim的配置" class="headerlink" title="vim的配置"></a>vim的配置</h2><p>写代码一般需要这些功能：</p>
+<ul>
+<li>自动补全</li>
+<li>查看函数原型来补全参数</li>
+<li>查看和跳转声明和实现</li>
+<li>显示当前文件的类、对象、函数等</li>
+</ul>
+<p>有很多的文章都讲到了如何配置。这里推荐韦易笑的文章<a href="http://www.skywind.me/blog/archives/2084" target="_blank" rel="noopener">《vim 8下c/c++开发环境搭建》</a>，文章是2018年写的，里面推荐的vim插件都非常的新。他在他知乎文章里也写到目前的自动补全方式主要分为<a href="https://zhuanlan.zhihu.com/p/36279445" target="_blank" rel="noopener">静态分析方法</a>和<a href="https://zhuanlan.zhihu.com/p/37290578" target="_blank" rel="noopener">LSP方法</a>：</p>
+<ul>
+<li>LSP就是<a href="https://langserver.org" target="_blank" rel="noopener">language server protocol</a>，由微软提出来的协议并建立了<a href="https://microsoft.github.io/language-server-protocol" target="_blank" rel="noopener">官网</a>，vscode的c++插件也是基于LSP开发的。LSP官网上列出了一些具体的实现，比如<a href="https://clang.llvm.org/extra" target="_blank" rel="noopener">clangd</a>、<a href="https://github.com/cquery-project/cquery" target="_blank" rel="noopener">cquery</a>和<a href="https://github.com/maskray/ccls" target="_blank" rel="noopener">ccls</a>，都是比较新出来的服务端还不够稳定，相信会越来越好。服务端配上vim的lsp客户端插件比如<a href="https://github.com/prabirshrestha/vim-lsp" target="_blank" rel="noopener">vim-lsp</a>就可以进行自动补全了。</li>
+<li>静态分析方法主要是利用<a href="https://www.gnu.org/software/global" target="_blank" rel="noopener">gtags</a>或者<a href="https://ctags.sourceforge.net" target="_blank" rel="noopener">ctags</a>来做分析，比较老的插件omnicppcomplete就是利用的ctags</li>
+</ul>
+<p>ctags因为年代久远，目前主要使用的都是<a href="https://github.com/universal-ctags/ctags" target="_blank" rel="noopener">universal-ctags</a>，编译需要使用automake、autoconf和pkg-config三个工具，而且可以把编译好的二进制文件改名称为比如uctags防止和macos上的默认ctags重名。静态分析方法是比较快的，对于大型源代码的浏览是非常方便的。浏览源代码的话除了要生成tags文件外，还需要一些插件支持比如<a href="https://github.com/ludovicchabant/vim-gutentags" target="_blank" rel="noopener">vim-gutentags</a>用于自动生成tags，<a href="https://github.com/Yggdroot/LeaderF" target="_blank" rel="noopener">LeaderF</a>用于显示函数列表。</p>
+<h2 id="vim-plugin"><a href="#vim-plugin" class="headerlink" title="vim-plugin"></a>vim-plugin</h2><p><a href="https://github.com/junegunn/vim-plugin" target="_blank" rel="noopener">vim-plugin</a>支持并发操作，比vundle快很多，配置也比较简单，推荐使用这个进行管理vim插件。</p>
+<h2 id="YouCompleteMe"><a href="#YouCompleteMe" class="headerlink" title="YouCompleteMe"></a>YouCompleteMe</h2><p><a href="http://github.com/valloric/youcompleteme" target="_blank" rel="noopener">YouCompleteMe</a>是很好的代码补全工具，是基于libclang的代码分析来进行自动补全。安装方式就是</p>
+<ul>
+<li>安装vim-plugin后在vim配置文件中添加<code>Plug &#39;valloric/youcompleteme&#39;</code></li>
+<li>进入vim执行命令<code>:PlugInstall</code></li>
+<li>随后进入<code>&lt;path-to-vim-config-directory&gt;/bundle/youcompleteme</code>执行<code>./install.py --clang-completer --system-clang --system-boost</code></li>
+<li>在vim配置文件中添加<code>let g:ycm_global_extra_conf=&lt;path-to-conf-file&gt;</code>提供编译命令和库文件位置，用以ycm_core解析</li>
+</ul>
+<p>烦人的事情是cmd默认并不是utf-8，所以如果你是ssh到Windows10的话，登陆进去后还需要用命令<code>chcp 65001</code>切换到utf-8，否则的话vim会报错而且你安装了youcompleteme也会失效的。</p>
+<p>另外比较推荐的是使用在CMakeLists.txt中增加CMAKE_EXPORT_COMPILE_COMMANDS，可以导出一个compile_commands.json文件用于YCM解析你的Include路径，非常方便。</p>
+<p>一些简单的配置可以方便使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">let g:ycm_filetype_whitelist=&#123;&apos;cpp&apos;:1,&apos;h&apos;:1,&apos;hpp&apos;:1,&apos;c&apos;:1&#125;	//只对c++文件开启ycm</span><br><span class="line">let g:ycm_confirm_extra_conf=0 			//关闭加载.ycm_extra_conf.py提示</span><br></pre></td></tr></table></figure></p>
+<h2 id="其他编辑器中的vim插件"><a href="#其他编辑器中的vim插件" class="headerlink" title="其他编辑器中的vim插件"></a>其他编辑器中的vim插件</h2><p>在Windows上vim还不是太好用，尤其是很多vim插件和Windows的兼容性不是特别好，很容易出现各种问题。所以在Windows上我推荐用Visual Studio Code或者Sublime Text 3作为编辑器，然后安装vim插件模拟vim的操作就很好了。Visual Studio 2017上也有vsvim插件，特别的方便。</p>
+<h1 id="CMake"><a href="#CMake" class="headerlink" title="CMake"></a>CMake</h1><p>一个最简单的CMakeLists.txt如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">project(projectname)</span><br><span class="line">add_executable(targetname sourcefilelist)</span><br></pre></td></tr></table></figure>
+<p>作为构建工具，CMake的目的是描述源文件之间的关系，以及目标是什么。这里就不得不提到库的概念了，CMake提供了对库的支持。在add_executable语句之前，加入link_directories可以添加动态库，加入include_directories可以添加静态库，添加target_link_librares可以逐个动态库文件加入到链接过程中。除此之外就是对一些CMake变量的记忆，能够帮助更快地将源文件之间的依赖关系描述清楚。还有Find语句的使用，提高了CMake模块的利用率，这里不再蛰述。推荐创建CMake的Kitware公司写的一本书<a href="https://www.amazon.com/Mastering-CMake-Ken-Martin/dp/1930934319" target="_blank" rel="noopener">《Mastering CMake》</a>。</p>
+<h1 id="Shell脚本"><a href="#Shell脚本" class="headerlink" title="Shell脚本"></a>Shell脚本</h1><p>在Windows上就是cmd和powershell，在UNIX上就是bash了，当然也有其他变种，最流行的就是bash了。Shell脚本的具体语法，我也不具体多说了，主要分享一些自己的经验。</p>
+<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><p>环境变量说白了，就是当你打开Shell控制台的时候，在该控制台进程中可以用的变量。比如最常用的Path环境变量，控制台用于寻找可执行文件就在Path中寻找。在Powershell中将环境变量env当作了Provider，可以像文件系统一样在其中浏览和编辑，可以使用Get-Child也就是ls命令。注册表HKLM和HKCU也都是Provider，可以浏览和编辑。在Bash中的话，环境变了要通过$来获取，直接方便。</p>
+<p>在Windows上用命令行开发，非常支持将开始菜单下Visual Studio 2017里的命令行工具(本质上是launchdevcmd.bat脚本)放到特定的文件夹下，当你ssh连接到Windows时，调用这个命令行工具可以设置很多环境变量。在<code>%vsinstalldir%\common7\tools</code>下有好几个bat脚本文件：</p>
+<ul>
+<li>launchdevcmd.bat 开始菜单中的visual studio prompt源文件调用vsdevcmd.bat</li>
+<li>vsmsbuildcmd.bat 调用vsdevcmd.bat但是不设置winsdk</li>
+<li>vsdevcmd.bat 运行所有的bat脚本</li>
+</ul>
+<p>在<code>%vsinstalldir%\common7\tools</code>下还有vsdevcmd文件夹，里面又有core文件夹分别对应了各种开发环境下的环境变量设置，ext文件夹对应了一些vsdevcmd.bat执行时调用的bat文件。如果熟悉这些脚本文件，比如只想载入c++相关环境变了，执行vcvarsall.bat就好了。</p>
+<p>比较遗憾的是并没有在Windwos SDK文件夹中找到设置环境变量的相关脚本，只能通过先调用vsdevcmd.bat得到%windowssdkbinpath%等环境变量后再进行文件夹切换cd后执行命令，并不能直接将一些二进制文件添加到path环境变了中。</p>
+<p>关于微软的其他官方脚本文件，可以在相应的文件夹下搜索<code>*.bat</code>就可以找到。</p>
+<h2 id="包管理器"><a href="#包管理器" class="headerlink" title="包管理器"></a>包管理器</h2><p>在UNIX中有各种包管理器，macOS中有<a href="http://brew.sh/" target="_blank" rel="noopener">homebrew</a>，ubuntu中有apt，但是在Windows中我想着重推荐两个包管理器：<a href="http://chocolatey.org/" target="_blank" rel="noopener">chocolatey</a>和<a href="http://github.com/microsoft/vcpkg" target="_blank" rel="noopener">vcpkg</a>。其中chocolatey本质上是一些powershell脚本，可以让你从官网下载应用程序安装到电脑上，而且还支持命令行卸载软件，非常方便。而vcpkg是微软推出的库文件下载工具，可以通过vcpkg install opencv命令安装opencv的动态库和静态库，支持自主更新非常的方便。</p>
+<h1 id="编译器"><a href="#编译器" class="headerlink" title="编译器"></a>编译器</h1><p>既然编译器是工具，我们也不要深究编译器的内部实现，工具用起来就需要知道它的选项有哪些。常见的编译器有Clang、GCC和MSVC，除了GCC之外，Clang和MSVC都分为前端和后端。其是Clang就是前端，后端是<a href="http://llvm.org" target="_blank" rel="noopener">LLVM</a>，全称应该是Clang/LLVM简写成Clang。而微软的编译器MSVC的前端和后端分别叫做C1和C2。现在微软在VS2017中提供了以Clang为前端，C2为后端的编译器，不过现在据说bug还比较多。</p>
+<ul>
+<li>Clang/LLVM的<a href="http://clang.llvm.org/docs/UsersManual.html" target="_blank" rel="noopener">编译器选项</a>，在Windows上最好下载预编译版本，和boost一样自己编译都是非常耗时间和麻烦的事情。在Windows上是可以单独运行的，不需要msvc。</li>
+<li>MSVC的<a href="https://docs.microsoft.com/en-us/cpp/build/reference/c-cpp-building-reference" target="_blank" rel="noopener">编译器选项</a>，在Windows上编程的必选，不过为了用vim我还是需要安装clang</li>
+<li>GCC的<a href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html" target="_blank" rel="noopener">编译器选项</a>，还是很多Linux发行版的默认编译器</li>
+</ul>
+<h1 id="调试器"><a href="#调试器" class="headerlink" title="调试器"></a>调试器</h1><p>在linux下主要就是GNU/gdb调试器，也有用LLVM/lldb调试器的，这两个调试的命令相近，使用手册或者网上的教程也很多，我不在蜇述。<code>gdb -tui</code>的字符界面用起来还不错。</p>
+<p>在Windows下主要用到的命令行调试器是cdb，这篇文章是以ssh连接服务器开发为基础，所以我也不介绍GUI的windbg了。可以使用<code>cdb -? &gt;&gt; &lt;path\to\save\text&gt;</code>来存储cdb自带的帮助文档查看使用方法，在微软的官方帮助文档上也有相应的文档。</p>
+<p>额外提到的是，不建议使用Visual Studio Installer来安装Windows SDK，因为它默认是不给你安装Debuggers For Windows也就是调试器的，因为Visual Studio自带图形化的调试器。我们可以在微软的<a href="https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk" target="_blank" rel="noopener">这个网站</a>上下载SDK来安装调试器。安装完以后调试器的地址在<code>%WindowsSdkBinPath%</code>，这个环境变量通过调用Visual Studio Prompt可以得到。</p>
+<h1 id="辅助工具"><a href="#辅助工具" class="headerlink" title="辅助工具"></a>辅助工具</h1><p>我使用vim和youcompleteme的原因在于，很多时候对于服务器来说都是没有显示器或者离服务器距离非常的远，这个时候就只能通过ssh连接了。而还有几种情况需要我们有额外的工具在ssh之前解决：</p>
+<ul>
+<li>当你的笔记本和服务器直连或者通过路由器连接，但是你并不知道服务器的ip是多少。这时候需要用到nmap端口扫描工具可以快速定位服务器的ip，当然如果路由器连接的设备非常多的时候，你要不是通过nmap -A扫描获得服务器名称来判断ip，要不然就是已知服务器网卡的MAC地址来通过arp包来判断了。</li>
+<li>当服务器只能通过无线网络进行互联网访问，你才能进行库安装等操作时，你需要用到如debian上的nmcli网络管理工具进行网络的连接。其他linux发行版应该有类似的工具，可以掌握一下。</li>
+<li>当服务器有多个网卡时，手动编辑路由表是个很重要的能力，因为网卡也是有优先级的，你发出去的数据包先经过哪个网卡是需要手动编辑路由表实现的。当你有本地局域网和能连接互联网的无线网时，你会发现登陆百度总也上不去，这是因为数据包优先通过本地局域网，但是本地局域网找不到百度服务器。这需要设置无线网卡优先级更高，才能实现。</li>
+</ul>
+<p>除此之外，我还推荐使用<a href="https://tmux.github.io" target="_blank" rel="noopener">tmux</a>工具，英文叫做terminal multiplexer也就是屏幕多用工具。很多时候我们执行一些命令需要时间，命令不会立即返回，那么我们要做别的工作又要重新打开终端，这太不方便了。我们使用tmux可以将执行中的终端隐藏在后端，继续进行我们的其他工作。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这四大工具使用地越熟练越能够提高你的效率，尤其是vim的vimscript如果能够很好地利用起来，能够自动化处理很多东西，需要在以后的日子里多加练习。</p>
+<h1 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h1><p>2018.12.18: 之前的文章是用Vundle来管理vim的插件的，最近看了韦易笑的文章发现用vim-plugin速度快很多，而且配置方便。另外发现了LSP这个好东西，这两年用YCM实在是配置起来蛋疼啊，逐渐转移到cquery和clangd去做LSP后端，vim-lsp作前端的配置方式了。现在就开始尝试起来。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/12/reading-plan-in-2017/" rel="next" title="2017年读书计划">
+                <i class="fa fa-chevron-left"></i> 2017年读书计划
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/20/reading-plan-in-2018/" rel="prev" title="2018年读书计划">
+                2018年读书计划 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div id="gitalk-container">
+    </div>
+    
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
+            
+              <p class="site-author-name" itemprop="name">斯旺达克</p>
+              <p class="site-description motion-element" itemprop="description">感受生命</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/svandex" title="Github &rarr; https://github.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>Github</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/svandex" title="Weibo &rarr; https://weibo.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://steamcommunity.com/id/svandex" title="Steam &rarr; https://steamcommunity.com/id/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://my.playstation.com/profile/svandex" title="PlayStation &rarr; https://my.playstation.com/profile/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-gamepad"></i>PlayStation</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#vim"><span class="nav-number">1.</span> <span class="nav-text">vim</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#vim在windows下的编译"><span class="nav-number">1.1.</span> <span class="nav-text">vim在windows下的编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim的配置"><span class="nav-number">1.2.</span> <span class="nav-text">vim的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-plugin"><span class="nav-number">1.3.</span> <span class="nav-text">vim-plugin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YouCompleteMe"><span class="nav-number">1.4.</span> <span class="nav-text">YouCompleteMe</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他编辑器中的vim插件"><span class="nav-number">1.5.</span> <span class="nav-text">其他编辑器中的vim插件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CMake"><span class="nav-number">2.</span> <span class="nav-text">CMake</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Shell脚本"><span class="nav-number">3.</span> <span class="nav-text">Shell脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境变量"><span class="nav-number">3.1.</span> <span class="nav-text">环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#包管理器"><span class="nav-number">3.2.</span> <span class="nav-text">包管理器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编译器"><span class="nav-number">4.</span> <span class="nav-text">编译器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#调试器"><span class="nav-number">5.</span> <span class="nav-text">调试器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#辅助工具"><span class="nav-number">6.</span> <span class="nav-text">辅助工具</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#更新"><span class="nav-number">8.</span> <span class="nav-text">更新</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 – <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">斯旺达克</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv" title="总访客量">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="site-pv" title="总访问量">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+  <script>
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=66127678";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+   <script>
+        var gitalk = new Gitalk({
+          clientID: '5d8c1a39657f82e7d0f7',
+          clientSecret: '3b20dcd4140b0f7386c5ff2acf0a2bddd442338b',
+          repo: 'svandex.github.io',
+          owner: 'svandex',
+          admin: ['svandex'],
+          id: md5(location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+h1 {
+  font-size: 1.5em;
+}
+h2 {
+  font-size: 1em;
+}
+.post-body p {
+  text-indent: 2em;
+}
