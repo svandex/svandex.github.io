@@ -1277,7 +1277,7 @@ pre .javascript .function {
 .post-body {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  font-family: 'SongTi SC', 'STSong', "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: 'SongTi SC | SimSun', 'STSong', "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 .post-body .exturl .fa {
   font-size: 14px;
@@ -1560,7 +1560,7 @@ pre .javascript .function {
 .posts-expand .post-meta {
   margin: 3px 0 60px 0;
   color: #999;
-  font-family: 'SongTi SC', 'STSong', "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: 'SongTi SC | SimSun', 'STSong', "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   text-align: center;
 }
@@ -1886,7 +1886,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #9ea3dd;
+  background: #ffffc8;
 }
 .links-of-blogroll {
   font-size: 13px;
