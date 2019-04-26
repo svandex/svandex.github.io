@@ -116,13 +116,14 @@
 
 
   <meta name="description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
+<meta name="keywords" content="C++">
 <meta property="og:type" content="article">
 <meta property="og:title" content="初探IIS中的C++多线程开发">
 <meta property="og:url" content="https://blog.svandex.cn/2019/04/26/start-on-iis-cpp-development/index.html">
 <meta property="og:site_name" content="斯旺达克">
 <meta property="og:description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-26T17:37:13.038Z">
+<meta property="og:updated_time" content="2019-04-26T17:40:01.695Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="初探IIS中的C++多线程开发">
 <meta name="twitter:description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
@@ -423,7 +424,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-27 01:37:13" itemprop="dateModified" datetime="2019-04-27T01:37:13+08:00">2019-04-27</time>
+                <time title="修改时间：2019-04-27 01:40:01" itemprop="dateModified" datetime="2019-04-27T01:40:01+08:00">2019-04-27</time>
               
             
           </span>
@@ -459,7 +460,7 @@
       
         <p>最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。</p>
 <p>但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好的，有些库甚至在Linux上就没有。典型的比如西门子的PLC产品对Linux的支持就非常的差，国家仪器的DAQMX系列库也是对Windows的兼容性最好，支持的设备也非常多。由于日常和试验设备都需要使用这些库，所以只能在Windows上开发，而最后的服务端开发框架就是IIS了。</p>
-<p>不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。</p>
+<p>不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。<br><a id="more"></a></p>
 <h1 id="IIS-C-开发简介"><a href="#IIS-C-开发简介" class="headerlink" title="IIS/C++开发简介"></a>IIS/C++开发简介</h1><p>首先要明确的一点是，IIS/C++开发是多线程开发，是不能够假想程序是按照管线顺序进行的。当你用Visual Studio开始debug模块的时候，你会发现除了主线程MainThread外，还有nativerd.dll线程，四个ntdll.dll!TppWorkerThread，以及四个w3tp.dll线程。如果你加载的模块越多的话，运行时的线程越多。而我们的程序主要就是跑在w3tp.dll上的线程，当你进行多线程调试的时候，可以切换这四个线程进行观察。所以如果你没有多线程开发的基础知识，没有看过&lt;&lt;C++ Concurrency in Action&gt;&gt;这本书，我劝你先补充点基础知识，花上一个月好好看一下。否则写出来的程序会很糟糕，很多功能无法实现。</p>
 <p>主要是分两种：模块和处理程序。处理程序的英文是handler，它是针对特定URL或者特定文件格式才会响应的；而模块是针对所有的请求都会执行相同的操作，而且想要使用WebSocket的话一定要始终模块开发的方式。模块开发又分为CGlobalModule和CHttpModule两种，每种对应的事件响应函数都不太相同，而且都需要注册相应的事件响应函数才能触发。两种模块最基本的开发方式看微软官网的<a href="https://docs.microsoft.com/en-us/iis/develop/runtime-extensibility/develop-a-native-cc-module-for-iis" target="_blank" rel="noopener">文档</a>就能够很快的理解，这里不再蜇述。其实模块开发就<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/web-server-core-classes" target="_blank" rel="noopener">两个类</a>，官网上都有介绍。更多的使用到了接口，常见的比如IHttpContext是用的最多的，通过他可以获取到比如连接IHttpConnection，请求IHttpRequest，返回IHttpResponse等对象，然后在这些对象基础上实现你要的功能。</p>
 <p>说到接口就谈一下<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/httpgetextendedinterface-function" target="_blank" rel="noopener">HttpGetExtendedInterface</a>这个函数。因为IIS是在不断的版本更新中，IHttpContext也有了很多的版本，最新到就是IHttpContext4增加了记录运行时间的功能。要得到这些新的HTTP上下文接口要使用这个函数，比如：</p>
@@ -505,6 +506,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/C/" rel="tag"># C++</a>
+          
+        </div>
       
 
       
