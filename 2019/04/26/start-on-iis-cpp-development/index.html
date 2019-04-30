@@ -116,14 +116,14 @@
 
 
   <meta name="description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
-<meta name="keywords" content="C++">
+<meta name="keywords" content="cpp">
 <meta property="og:type" content="article">
 <meta property="og:title" content="初探IIS中的C++多线程开发">
 <meta property="og:url" content="https://blog.svandex.cn/2019/04/26/start-on-iis-cpp-development/index.html">
 <meta property="og:site_name" content="斯旺达克">
 <meta property="og:description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-26T18:13:49.069Z">
+<meta property="og:updated_time" content="2019-04-30T13:58:44.408Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="初探IIS中的C++多线程开发">
 <meta name="twitter:description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。 但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好">
@@ -424,7 +424,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-27 02:13:49" itemprop="dateModified" datetime="2019-04-27T02:13:49+08:00">2019-04-27</time>
+                <time title="修改时间：2019-04-30 21:58:44" itemprop="dateModified" datetime="2019-04-30T21:58:44+08:00">2019-04-30</time>
               
             
           </span>
@@ -464,7 +464,7 @@
 <h1 id="IIS-C-开发简介"><a href="#IIS-C-开发简介" class="headerlink" title="IIS/C++开发简介"></a>IIS/C++开发简介</h1><p>首先要明确的一点是，IIS/C++开发是多线程开发，是不能够假想程序是按照管线顺序进行的。当你用Visual Studio开始debug模块的时候，你会发现除了主线程MainThread外，还有nativerd.dll线程，四个ntdll.dll!TppWorkerThread，以及四个w3tp.dll线程。如果你加载的模块越多的话，运行时的线程越多。而我们的程序主要就是跑在w3tp.dll上的线程，当你进行多线程调试的时候，可以切换这四个线程进行观察。所以如果你没有多线程开发的基础知识，没有看过&lt;&lt;C++ Concurrency in Action&gt;&gt;这本书，我劝你先补充点基础知识，花上一个月好好看一下。否则写出来的程序会很糟糕，很多功能无法实现。</p>
 <p>主要是分两种：模块和处理程序。处理程序的英文是handler，它是针对特定URL或者特定文件格式才会响应的；而模块是针对所有的请求都会执行相同的操作，而且想要使用WebSocket的话一定要选择模块开发的方式。模块开发又分为CGlobalModule和CHttpModule两种，每种对应的事件响应函数都不太相同，而且都需要注册相应的事件响应函数才能触发。两种模块最基本的开发方式看微软官网的<a href="https://docs.microsoft.com/en-us/iis/develop/runtime-extensibility/develop-a-native-cc-module-for-iis" target="_blank" rel="noopener">文档</a>就能够很快的理解，这里不再蜇述。其实模块开发就<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/web-server-core-classes" target="_blank" rel="noopener">两个类</a>，官网上都有介绍。更多的使用到了接口，常见的比如IHttpContext是用的最多的，通过他可以获取到比如连接IHttpConnection，请求IHttpRequest，返回IHttpResponse等对象，然后在这些对象基础上实现你要的功能。</p>
 <p>说到接口就谈一下<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/httpgetextendedinterface-function" target="_blank" rel="noopener">HttpGetExtendedInterface</a>这个函数。因为IIS是在不断的版本更新中，IHttpContext也有了很多的版本，最新到就是IHttpContext4增加了记录运行时间的功能。要得到这些新的HTTP上下文接口要使用这个函数，比如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">IHttpServer* pHttpServer;</span><br><span class="line"></span><br><span class="line">//两个版本的IHttpContext</span><br><span class="line">IHttpContext pHttpContext;</span><br><span class="line">IHttpContext3* pHttpContext3;</span><br><span class="line"></span><br><span class="line">//接口升级，原接口也还能用</span><br><span class="line">HttpGetExtendedInterface(pHttpServer,pHttpContext,&amp;pHttpContext3);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">IHttpServer* pHttpServer;</span><br><span class="line"></span><br><span class="line">//两个版本的IHttpContext</span><br><span class="line">IHttpContext* pHttpContext;</span><br><span class="line">IHttpContext3* pHttpContext3;</span><br><span class="line"></span><br><span class="line">//接口升级，原接口也还能用</span><br><span class="line">HttpGetExtendedInterface(pHttpServer,pHttpContext,&amp;pHttpContext3);</span><br></pre></td></tr></table></figure>
 <p>这样你就可以用pHttpContext3来做一些别的工作，比如后面会讲到的IWebSocketContext来进行WebSocket协议通信。还有想要提到的是IHttpContext有个函数是<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpcontext-allocaterequestmemory-method" target="_blank" rel="noopener">AllocateRequestMemory</a>，类似于malloc的功能可以分配一段内存用来初始化，而IHttpContext的生命周期是整个请求处理管线，这样就能解决堆内存的问题。不过有个问题是，你需要通过移动复制运算符将对象写入到这个内存中去，对移动构造函数和移动赋值运算符的理解要够深，尤其是对象内带指针的话。</p>
 <p>除此之外，还有个很重要的接口是IHttpStoredContext，可以在该接口上派生新的类来实现变量的管理，从而实现特定的功能。比如IWebSocketContext其实就是派生自IHttpStoredContext，专门用来处理WebSocket协议的通信问题，我们可以借鉴这种方式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IWebSocketContext* pWebSocket=IHttpContext3-&gt;GetNamedContextContainer()-&gt;GetNamedContext(IIS_WEBSOCKET)</span><br></pre></td></tr></table></figure></p>
 <p>这里要引入头文件<code>iiswebsocket.h</code>才能使用IWebSocketContext，还有<code>IIS_WEBSOCKT</code>是宏定义宽字符串<code>L&quot;websockets&quot;</code>。我们可以仿照这种方式通过调用<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/inamedcontextcontainer-setnamedcontext" target="_blank" rel="noopener">SetNamedContext</a>函数来设定我们自己的IHttpStoredContext进行特定功能的实现，而且通过这种设置IHttpStoredContext方式，可以在不同的线程中通过GetNamedContext来获取到，解决了多线程中变量传递。</p>
@@ -483,7 +483,7 @@
 <p>比如说我们的WebSocket通信。WebSocket首先肯定是等待输入的，有了输入后读取输入，根据输入执行相关操作，再输出。如果我们打开了WebSocket通信，一直不输入，在IIS的请求处理管线的主线程上，IIS是不可能等我们的。因此我们要开启新的线程来维护WebSocket自身的状态机，肯定是一个While循环的，如下伪代码所示:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">std::condition_variable cv</span><br><span class="line">std::mutex mt</span><br><span class="line">std::promise ps</span><br><span class="line"></span><br><span class="line">//管线主线程</span><br><span class="line">deterministic_event()&#123;</span><br><span class="line"></span><br><span class="line">    async_state_machine();</span><br><span class="line"></span><br><span class="line">    //提示IIS在该必然性事件中会有阻塞</span><br><span class="line">    return RQ_NOTIFICATIN_PENDING;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//OnAsyncCompletion非必然性事件</span><br><span class="line">OnAsyncCompletion()&#123;</span><br><span class="line">    ps.wait()</span><br><span class="line"></span><br><span class="line">    //其实这里是新的管线主线程,新的线程下继续管线</span><br><span class="line">    //在必然性事件中返回了PENDING后，async_state_machine就不在管线了，但是仍在同一个线程</span><br><span class="line">    return RQ_NOTIFICATION_CONTINUE;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//在原管线主线程的栈上调用的函数，不会切换线程</span><br><span class="line">async_state_machine()&#123;</span><br><span class="line">    while(TRUE)&#123;</span><br><span class="line">        std::unique_lock&lt;std::mutex&gt; lk(mt);</span><br><span class="line">        websocket_read(...,read_async_functor,...);</span><br><span class="line">        cv.wait(mt,[]()&#123;return sm_continue&#125;);</span><br><span class="line">        if(close)&#123;</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ps.set_value(TRUE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//该函数是WebSocket模块读取一次后执行的不同线程中的回调函数</span><br><span class="line">read_async_functor()&#123;</span><br><span class="line">    if(!read_final)&#123;</span><br><span class="line">        while(!read_final)&#123;</span><br><span class="line">            websocket_read()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    websocket_write();</span><br><span class="line">    sm_continue=TRUE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这里<code>async_state_machine</code>函数里有while函数，如果WebSocket通信一直不输入，将会在<code>cv.wait</code>一直阻塞。所以如果在必然性事件中比如<code>OnAuthorizeRequest</code>中调用<code>async_state_machine</code>则要返回<code>RQ_NOTIFICATION_PENDING</code>，此时IIS会开新线程执行函数<code>OnAsyncCompletion</code>作为新的管线主线程进行管线，注意如果该函数执行完毕，那么IIS就会直接进入管线的下一个必然性事件。因此我们需要用<code>std::promise</code>来让<code>OnAsyncCompletion</code>处于阻塞状态，直到<code>async_state_machine</code>跳出来while循环并设置<code>ps.set_value(TRUE)</code>,IIS的管线才能到达下一个事件。</p>
-<p>总的来说就是通过异步方式实现自己的功能，同时又不会阻塞IIS主线程，但是还是阻塞了管线的。</p>
+<p>5.1更新:似乎在管线必然性事件中只要有异步事件发生，就会产生新的线程执行OnAsyncCompletion函数，而且通过跟踪执行发现。后续的必然性事件都会执行两次，说明从OnAsyncCompletion之后开了新的管线继续执行，原有的管线线程也仍在继续进行。那么原有管线因为是WebSocket通信，HTTP报文其实body里也没有内容，应该是要返回<code>RQ_NOTIFICATION_FINISH</code>才是正解，然后在OnAsyncCompletion中返回<code>RQ_NOTIFICATION_PENDING</code>进行阻塞。不阻塞的话，该线程先执行完的话，会把正在进行的WebSocket状态机终止掉。</p>
 <h1 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h1><p>为了实现WebSocket通信，我们需要通过三个线程来构成一个WebSocket的状态机，通过<code>std::condition_variable</code>来进行线程通信，让状态切换下去。感兴趣的小伙伴可以用我自己写的<a href="https://github.com/svandex/RigNet/" target="_blank" rel="noopener">Svandex::WebSocket</a>类来测试一下该WebSocket通信实现，在该仓库的<code>Svandex.h</code>头文件中。</p>
 <p>除了多线程开发是难点外，IHttpStoreContext的使用还没有完全熟络。通过使用这个接口相当于有了一个全局变量，可以在管线的不同位置执行该接口的特定功能。有掌握技巧的，有案例的可以分享一下。另外关于处理程序handler我也还没有写过，这好像就是ASP.NET的原理，专门处理aspx文件，用C++其实可以实现一个CSP的。</p>
 
@@ -509,7 +509,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/C/" rel="tag"># C++</a>
+            <a href="/tags/cpp/" rel="tag"># cpp</a>
           
         </div>
       
@@ -623,8 +623,6 @@
                     
                   
                     
-                    
-                      
                     
                       
                     
