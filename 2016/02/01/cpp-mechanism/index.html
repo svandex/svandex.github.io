@@ -15,7 +15,7 @@
 
 
 <html class="theme-next pisces use-motion" lang="zh-CN">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -184,7 +184,7 @@
 
 </head>
 
-<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   
   
@@ -194,7 +194,7 @@
   <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
-    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-wrapper">
   <div class="site-meta">
     
@@ -349,20 +349,20 @@
 
   
 
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2016/02/01/cpp-mechanism/">
 
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
       <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
 
@@ -455,7 +455,8 @@
 <p>技术之外，想多谈谈一些其他问题。学习C++的初衷不仅仅是因为兴趣，也是想要自己有一门技术不容易失业。我觉得推动C++发展的一个是九十年代如日中天的微软，这样有影响力的公司的重视，依托于Windows上MFC，COM技术发展，工业界的需求使得C++快速发展；另一个是2000年以后互联网的发展要求高性能的服务器，对C++也有了更多的需求。而学习C++之于我自己，可以更好的面对工作，多一个窗口多一份视野；在工作之中，我也看到了工业界对于计算机处理的大量需求，这也可以让自己与别人相比，更突出一些。</p>
 <p>然而要对计算机有更深层次的理解，绝不会是对于具体语言或者语言之上的各种高大上的框架的认识。而是在于计算理论，状态机，CPU架构，操作系统等的认识；我自己也很想在学好C++能写出一些满足工作需求的软件之后，更加注重对于计算本质的理解，这是生而为人对于世界最原始的好奇。世界之复杂，技术之外别有洞天；也要去多看看，多理解技术之外的各种社会现象。(2018/03/30更新)</p>
 <h1 id="组成结构"><a href="#组成结构" class="headerlink" title="组成结构"></a>组成结构</h1><p>C++是兼容C语言的，强类型的高性能编译性语言。我觉得编程语言可以由类，函数，表达式，语句和高级特性五个部分组成。高级特性包括比如模板，lambda表达式之类的。</p>
-<h1 id="内置数据类型"><a href="#内置数据类型" class="headerlink" title="内置数据类型"></a>内置数据类型</h1><p>内置数据类型是整个C++语言的基石，内置的int，short，long，double，float，char，bool其实是对于内存的一种映射过程，是构成其他任何类的最底层抽象。<br><a id="more"></a></p>
+<h1 id="内置数据类型"><a href="#内置数据类型" class="headerlink" title="内置数据类型"></a>内置数据类型</h1><p>内置数据类型是整个C++语言的基石，内置的int，short，long，double，float，char，bool其实是对于内存的一种映射过程，是构成其他任何类的最底层抽象。</p>
+<a id="more"></a>
 <h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><p>函数最主要的是虚实结合方式（总共有21种方式）。尤其是const限定符，指针和引用参数导致了虚实结合过程的复杂性。</p>
 <ul>
 <li>一个函数通常有两次拷贝过程，一次是虚实结合过程，一次是返回对象过程。如果所有的参数类型和返回类型都是引用，就不存在拷贝过程，这也是我们想要的理想效果。</li>
@@ -641,7 +642,7 @@
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
 
-          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
   
     <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
   
@@ -656,7 +657,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -801,7 +802,7 @@
 </div>
 
 
-  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
 
 
 

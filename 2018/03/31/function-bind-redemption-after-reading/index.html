@@ -15,7 +15,7 @@
 
 
 <html class="theme-next pisces use-motion" lang="zh-CN">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -184,7 +184,7 @@
 
 </head>
 
-<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   
   
@@ -194,7 +194,7 @@
   <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
-    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-wrapper">
   <div class="site-meta">
     
@@ -349,20 +349,20 @@
 
   
 
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2018/03/31/function-bind-redemption-after-reading/">
 
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
       <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
 
@@ -454,7 +454,9 @@
         <p>这篇文章写的非常深刻，讲述了C++中的一些不足。虽然原作者表明未经同意不得转载，我还是截取过来进行了部分格式上的调整，自己也想在这篇文章之后，谈谈自己的看法，附上<a href="https://blog.csdn.net/myan/article/details/5928531" target="_blank" rel="noopener">原文</a>更好对照。同时也担心原网站要是挂了，这好文章可就找不到了。原作者是孟岩，曾任职CSDN和《程序员》杂志技术总编。</p>
 <p>印象中孟岩在他的一篇博文中谈到自己没有怎么写过工程代码，自己是一个计算机文化人。我也是很赞同这点，懂车会玩车比自己亲自造车还是有意思很多的。</p>
 <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>这是那篇C++0X的正文。太长，先写上半部分发了。</p>
-<p>Function/bind可以是一个很简单的话题，因为它其实不过就是一个泛型的函数指针。但是如果那么来谈，就没意思了，也犯不上写这篇东西。在我看来，这个事情要讲的话，就应该讲透，讲到回调（callback）、代理（delegate）、信号（signal）和消息传递（messaging）的层面，因为它确实是太重要了。这个话题不但与面向对象的核心思想密切相关，而且是面向对象两大流派之间交锋的中心。围绕这个问题的思考和争论，几乎把20年来所有主流的编程平台和编程语言都搅进来了。所以，如果详尽铺陈，这个话题直接可以写一本书。<br><a id="more"></a><br>写书我当然没那个水平，但这个题目确实一直想动一动。然而这个主题实在太大，我实在没有精力把它完整的写下来；这个主题也很深，特别是涉及到并发环境有关的话题，我的理解还非常肤浅，总觉得我认识的很多高手都比我更有资格写这个话题。所以犹豫了很久，要不要现在写，该怎么写。最后我觉得，确实不能把一篇博客文章写成一本20年面向对象技术史记，所以决定保留大的架构，但是对其中具体的技术细节点到为止。我不会去详细地列举代码，分析对象的内存布局，画示意图，但是会把最重要的结论和观点写下来，说得好听一点是提纲挈领，说的不好听就是语焉不详。但无论如何，我想这样一篇东西，一是谈谈我对这个事情的看法，二是“抛砖引玉”，引来高手的关注，引出更深刻和完整的叙述。</p>
+<p>Function/bind可以是一个很简单的话题，因为它其实不过就是一个泛型的函数指针。但是如果那么来谈，就没意思了，也犯不上写这篇东西。在我看来，这个事情要讲的话，就应该讲透，讲到回调（callback）、代理（delegate）、信号（signal）和消息传递（messaging）的层面，因为它确实是太重要了。这个话题不但与面向对象的核心思想密切相关，而且是面向对象两大流派之间交锋的中心。围绕这个问题的思考和争论，几乎把20年来所有主流的编程平台和编程语言都搅进来了。所以，如果详尽铺陈，这个话题直接可以写一本书。</p>
+<a id="more"></a>
+<p>写书我当然没那个水平，但这个题目确实一直想动一动。然而这个主题实在太大，我实在没有精力把它完整的写下来；这个主题也很深，特别是涉及到并发环境有关的话题，我的理解还非常肤浅，总觉得我认识的很多高手都比我更有资格写这个话题。所以犹豫了很久，要不要现在写，该怎么写。最后我觉得，确实不能把一篇博客文章写成一本20年面向对象技术史记，所以决定保留大的架构，但是对其中具体的技术细节点到为止。我不会去详细地列举代码，分析对象的内存布局，画示意图，但是会把最重要的结论和观点写下来，说得好听一点是提纲挈领，说的不好听就是语焉不详。但无论如何，我想这样一篇东西，一是谈谈我对这个事情的看法，二是“抛砖引玉”，引来高手的关注，引出更深刻和完整的叙述。</p>
 <p>下面开始。</p>
 <h2 id="程序设计范式"><a href="#程序设计范式" class="headerlink" title="程序设计范式"></a>程序设计范式</h2><p>程序设计有一个范式（paradigm）问题。所谓范式，就是组织程序的基本思想，而这个基本思想，反映了程序设计者对程序的一个基本的哲学观，也就是说，他认为程序的本质是什么，他认为一个大的程序是由什么组成的。而这，又跟他对于现实世界的看法有关。显然，这样的看法不可能有很多种。编程作为一门行业，独立存在快60年了，但是所出现的范式不过三种——过程范式、函数范式、对象范式。其中函数范式与现实世界差距比较大，在这里不讨论。而过程范式和对象范式可以视为对程序本质的两种根本不同的看法，而且能够分别在现实世界中找到相应的映射。</p>
 <p>过程范式认为，程序是由一个又一个过程经过顺序、选择和循环的结构组合而成。反映在现实世界，过程范式体现了劳动分工之前“全能人”的工作特点——所有的事情都能干，所有的资源都是我的，只不过得具体的事情得一步步地来做。 </p>
@@ -611,7 +613,7 @@
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
 
-          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
   
     <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
   
@@ -626,7 +628,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -771,7 +773,7 @@
 </div>
 
 
-  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
 
 
 

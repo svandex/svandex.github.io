@@ -15,7 +15,7 @@
 
 
 <html class="theme-next pisces use-motion" lang="zh-CN">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -184,7 +184,7 @@
 
 </head>
 
-<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   
   
@@ -194,7 +194,7 @@
   <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
-    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-wrapper">
   <div class="site-meta">
     
@@ -349,20 +349,20 @@
 
   
 
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2017/08/16/tool-chain/">
 
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
       <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
 
@@ -469,6 +469,7 @@
 </ul>
 <p>需要强调的是如果要编译支持python需要用到命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmake -f Make_mvc.mak PYTHON3=\path\to\python3 DYNAMIC_PYTHON3=yes PYTHON3_VER=python3_version</span><br></pre></td></tr></table></figure>
+
 <p>这样可以在src文件中生成所有的二进制文件。然后需要在你想要安装的vim文件夹中拷贝这些二进制文件，并且要把源代码中的runtime文件夹也要拷贝到二进制文件位置，然后设置环境变了$VIM为该位置，具体可以看README_dos.txt和INSTALLpc.txt中的介绍。</p>
 <h2 id="vim的配置"><a href="#vim的配置" class="headerlink" title="vim的配置"></a>vim的配置</h2><p>写代码一般需要这些功能：</p>
 <ul>
@@ -486,10 +487,13 @@
 <h2 id="vim-plugin"><a href="#vim-plugin" class="headerlink" title="vim-plugin"></a>vim-plugin</h2><p><a href="https://github.com/junegunn/vim-plugin" target="_blank" rel="noopener">vim-plugin</a>支持并发操作，比vundle快很多，配置也比较简单，推荐使用这个进行管理vim插件。</p>
 <h2 id="cquery"><a href="#cquery" class="headerlink" title="cquery"></a>cquery</h2><p><a href="https://github.com/cquery-project/cquery" target="_blank" rel="noopener">cquery</a>是基于微软公开的LSP的服务端，安装也非常的方便，git clone之后按照传统的cmake配置和编译即可，然后将其放到PATH环境变量中。不过在Windows下并不推荐采用cmake生成的compile_commands.json来提供路径给cquery，因为clang在Windows下比较难用，cmake会无法正常配置的。clang-cl的使用大家可以尝试一下，我总是链接失败就没用了。</p>
 <h2 id="vim-lsc"><a href="#vim-lsc" class="headerlink" title="vim-lsc"></a>vim-lsc</h2><p><a href="https://github.com/natebosch/vim-lsc" target="_blank" rel="noopener">vim-lsc</a>是基于LSP的客户端。在微软的官网上是有很多选择的，不过我个人还是很喜欢这个插件，功能比较精简正好都是我需要的。安装也非常的方便，在配置文件中增加<code>Plug &#39;natebosch/vim-lsc&#39;</code>即可。</p>
-<p>在<code>$HOME\_vimrc</code>文件中如下配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let g:lsc_server_commands=&#123;&apos;cpp&apos;:&apos;cquery --init=&quot;&#123;\&quot;cacheDirectory\&quot;:\&quot;&lt;path&gt;\&quot;,\&quot;discoverySystemIncludes\&quot;:false&#125;&quot;&apos;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在<code>$HOME\_vimrc</code>文件中如下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let g:lsc_server_commands=&#123;&apos;cpp&apos;:&apos;cquery --init=&quot;&#123;\&quot;cacheDirectory\&quot;:\&quot;&lt;path&gt;\&quot;,\&quot;discoverySystemIncludes\&quot;:false&#125;&quot;&apos;&#125;</span><br></pre></td></tr></table></figure>
+
 <p>这里的discoverSystemIncludes是是否进行编译器的include文件夹推断的，而且会对clang++和g++对都推断一次，如果你的操作系统比如WIndows一般都没装g++，会产生大量的错误出来，特别恶心。所以这里设置成false可以关掉这个功能，我发现作者是默认设置这个打开的，因为他就是在linux上开发的吧。</p>
 <h1 id="CMake"><a href="#CMake" class="headerlink" title="CMake"></a>CMake</h1><p>一个最简单的CMakeLists.txt如下所示：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">project(projectname)</span><br><span class="line">add_executable(targetname sourcefilelist)</span><br></pre></td></tr></table></figure>
+
 <p>作为构建工具，CMake的目的是描述源文件之间的关系，以及目标是什么。这里就不得不提到库的概念了，CMake提供了对库的支持。在add_executable语句之前，加入link_directories可以添加动态库，加入include_directories可以添加静态库，添加target_link_librares可以逐个动态库文件加入到链接过程中。除此之外就是对一些CMake变量的记忆，能够帮助更快地将源文件之间的依赖关系描述清楚。还有Find语句的使用，提高了CMake模块的利用率，这里不再蛰述。推荐创建CMake的Kitware公司写的一本书<a href="https://www.amazon.com/Mastering-CMake-Ken-Martin/dp/1930934319" target="_blank" rel="noopener">《Mastering CMake》</a>。</p>
 <h1 id="Shell脚本"><a href="#Shell脚本" class="headerlink" title="Shell脚本"></a>Shell脚本</h1><p>在Windows上就是cmd和powershell，在UNIX上就是bash了，当然也有其他变种，最流行的就是bash了。Shell脚本的具体语法，我也不具体多说了，主要分享一些自己的经验。</p>
 <h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><p>环境变量说白了，就是当你打开Shell控制台的时候，在该控制台进程中可以用的变量。比如最常用的Path环境变量，控制台用于寻找可执行文件就在Path中寻找。在Powershell中将环境变量env当作了Provider，可以像文件系统一样在其中浏览和编辑，可以使用Get-Child也就是ls命令。注册表HKLM和HKCU也都是Provider，可以浏览和编辑。在Bash中的话，环境变了要通过$来获取，直接方便。</p>
@@ -637,7 +641,7 @@
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
 
-          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
   
     <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
   
@@ -652,7 +656,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -797,7 +801,7 @@
 </div>
 
 
-  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
 
 
 
