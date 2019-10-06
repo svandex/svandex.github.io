@@ -4,112 +4,54 @@
 
 
 
-
-
-
-
-
-
-
-  
-
-
-<html class="theme-next pisces use-motion" lang="zh-CN">
-<head><meta name="generator" content="Hexo 3.9.0">
+<html lang="zh-CN">
+<head>
   <meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.1">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.1" color="#222">
 
-
-
-
-
-
-
-
-
-
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
-
-
-
-
-
-
-<link rel="stylesheet" href="/css/main.css?v=7.2.0">
-
-
-
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-
-
-
+<link rel="stylesheet" href="/css/main.css?v=7.4.1">
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
 
 
-
-
-
-
-
-
-<script id="hexo.configurations">
+<script id="hexo-configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
     scheme: 'Pisces',
-    version: '7.2.0',
+    version: '7.4.1',
+    exturl: false,
     sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
-    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
     copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
     fancybox: false,
     mediumzoom: false,
     lazyload: false,
     pangu: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     algolia: {
-      applicationID: '',
+      appID: '',
       apiKey: '',
       indexName: '',
       hits: {"per_page":10},
       labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     translation: {
       copy_button: '复制',
       copy_success: '复制成功',
       copy_failure: '复制失败'
-    }
+    },
+    sidebarPadding: 40
   };
 </script>
 
@@ -123,24 +65,20 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="斯旺达克">
 <meta name="twitter:description" content="感受生命">
-
-
-
-
-
-  
-  
   <link rel="canonical" href="https://blog.svandex.cn/page/3/">
 
 
-
-<script id="page.configurations">
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
+    isHome: true,
+    isPost: false,
+    isPage: false,
+    isArchive: false
   };
 </script>
 
-  
   <title>斯旺达克</title>
   
 
@@ -151,13 +89,8 @@
 
 
 
-
-
-
-
   <noscript>
   <style>
-  .use-motion .motion-element,
   .use-motion .brand,
   .use-motion .menu-item,
   .sidebar-inner,
@@ -166,7 +99,7 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
+  .use-motion .collection-header { opacity: initial; }
 
   .use-motion .logo,
   .use-motion .site-title,
@@ -182,177 +115,119 @@
 
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left 
-  page-home">
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
+      <div class="header-inner"><div class="site-brand-container">
   <div class="site-meta">
-    
 
-    <div class="custom-logo-site-title">
+    <div>
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">斯旺达克</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
-    
-      
         <h1 class="site-subtitle" itemprop="description">游戏、历史、电子</h1>
       
-    
-    
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
   </div>
 </div>
-
 
 
 <nav class="site-nav">
   
-    <ul id="menu" class="menu">
+  <ul id="menu" class="menu">
+      
+      
       
         
-        
-        
-          
-          <li class="menu-item menu-item-home">
-
-    
-    
+        <li class="menu-item menu-item-home">
       
     
 
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
+        <li class="menu-item menu-item-archives">
       
     
 
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
+        <li class="menu-item menu-item-tags">
       
     
 
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-书单">
-
-    
-    
+        <li class="menu-item menu-item-书单">
       
     
 
-    
-
-    <a href="/booklist/" rel="section"><i class="menu-item-icon fa fa-fw fa-book"></i> <br>书单</a>
+    <a href="/booklist/" rel="section"><i class="fa fa-fw fa-book"></i>书单</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-游戏">
-
-    
-    
+        <li class="menu-item menu-item-游戏">
       
     
 
-    
-
-    <a href="/game/" rel="section"><i class="menu-item-icon fa fa-fw fa-gamepad"></i> <br>游戏</a>
+    <a href="/game/" rel="section"><i class="fa fa-fw fa-gamepad"></i>游戏</a>
 
   </li>
+  </ul>
 
-      
-      
-    </ul>
-  
-
-  
-
-  
 </nav>
-
-
-
 </div>
     </header>
 
     
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
 
 
     <main id="main" class="main">
       <div class="main-inner">
         <div class="content-wrap">
-          
             
 
-          
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
-    
-      
 
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  <div class="posts-expand">
+        
   
   
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2017/08/16/tool-chain/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -364,35 +239,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2017/08/16/tool-chain/" class="post-title-link" itemprop="url">开发工具链</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2017/08/16/tool-chain/" class="post-title-link" itemprop="url">开发工具链</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -403,45 +262,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-30 21:59:07" itemprop="dateModified" datetime="2019-04-30T21:59:07+08:00">2019-04-30</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -449,17 +272,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>工欲善其事必先利其器。在理解了操作系统、编译原理等知识之后，选择自己的代码编辑器以及掌握构建工具、shell脚本、编译器、调试器、性能分析器等工具就是重中之重了。我选择了以vim为基本编辑器，以CMake为构建工具，然后在不同的平台上选择不同的shell脚本和编译器。</p>
 <p>之所以有这样的选择，主要是因为在服务器端编程，很多情况下你没有办法物理上接触到服务器的，只能通过ssh方式连接到服务器。这也包括Windows服务器，在Windows10之后有了openssh支持方便了很多。所以后续阅读中请以ssh连接为背景来理解这些工具。</p>
 <h1 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h1><p>关于<a href="http://www.vim.org/" target="_blank" rel="noopener">vim</a>的使用方法，我就不着重介绍了，网络上有很多的资源。我主要介绍一下自己的配置方法。</p>
 <p>我这里只想提下如果你的vimrc配置文件写错了，在进入vim时候会出现一片空白通知你配置文件错误，但是又没有详细说明。这时候用vim -D进入开发者debug模式，可以逐行运行配置文件中的语句，对于查错非常有帮助。还有提醒一点是ssh连接到Windows 10后，默认cmd的编码方式不是utf-8，要通过命令<code>chcp 65001</code>切换，这对于后续工具使用非常重要。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2017/08/16/tool-chain/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -471,57 +290,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2017/02/12/reading-plan-in-2017/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -533,35 +317,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2017/02/12/reading-plan-in-2017/" class="post-title-link" itemprop="url">2017年读书计划</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2017/02/12/reading-plan-in-2017/" class="post-title-link" itemprop="url">2017年读书计划</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -572,45 +340,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-01-05 17:49:46" itemprop="dateModified" datetime="2019-01-05T17:49:46+08:00">2019-01-05</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -618,15 +350,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>又到了新的一年，新的读书计划也要规划起来了。</p>
 <h1 id="C"><a href="#C" class="headerlink" title="C++"></a>C++</h1><p>我已经看完了《C++ Primer》，看得很艰辛。面向对象编程的概念虽然很简单，但是里面的细节太多了，而Primer这本书过于讲究所有的细节，所以书看得特别慢。我觉得新手应该先看《A tour of C++》这样的讲究全局的书，然后在看《C++ Primer》这种事无巨细的百科全书。也看完了《深入探索C++对象模型》，这本书虽然是1996年的，但是将C++中的对象在内存中的分布，构造函数和析构函数，各种继承方式的实现，还有最重要的多态实现方法都给读者剖析出来了。其实这些东西本质上来说，就是学习具体C++编译器的过程，所以我想在新的一年里，将《程序员的自我修养》和《深入理解计算机系统》两本书好好读一下。这两本书，将的都是编译原理和操作系统的书，而且将两者结合起来看，让你明白从你手敲的代码到最后的二进制，到程序如何加载到内存，都给你剖析出来。我觉得要做到这个份上，才能够熟练地使用C++。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2017/02/12/reading-plan-in-2017/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -638,57 +366,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2016/02/01/cpp-mechanism/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -700,35 +393,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2016/02/01/cpp-mechanism/" class="post-title-link" itemprop="url">理解C++的机制</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2016/02/01/cpp-mechanism/" class="post-title-link" itemprop="url">理解C++的机制</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -739,45 +416,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-30 21:57:37" itemprop="dateModified" datetime="2019-04-30T21:57:37+08:00">2019-04-30</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -785,10 +426,6 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>C++的学习曲线是漫长的，不仅仅是因为其支持的范式多，知识点较多。还有一个很重要的原因是陷阱比较多，由于机制复杂导致了机制之间会有相互制约。最近半个月又重新浏览了一遍C++ Primer，把自己没有掌握好的一些知识点重新复习了一下，收货颇丰。这篇文章我会一直更新下去，直到我认为我对C++的理解很全面了。</p>
 <p>技术之外，想多谈谈一些其他问题。学习C++的初衷不仅仅是因为兴趣，也是想要自己有一门技术不容易失业。我觉得推动C++发展的一个是九十年代如日中天的微软，这样有影响力的公司的重视，依托于Windows上MFC，COM技术发展，工业界的需求使得C++快速发展；另一个是2000年以后互联网的发展要求高性能的服务器，对C++也有了更多的需求。而学习C++之于我自己，可以更好的面对工作，多一个窗口多一份视野；在工作之中，我也看到了工业界对于计算机处理的大量需求，这也可以让自己与别人相比，更突出一些。</p>
 <p>然而要对计算机有更深层次的理解，绝不会是对于具体语言或者语言之上的各种高大上的框架的认识。而是在于计算理论，状态机，CPU架构，操作系统等的认识；我自己也很想在学好C++能写出一些满足工作需求的软件之后，更加注重对于计算本质的理解，这是生而为人对于世界最原始的好奇。世界之复杂，技术之外别有洞天；也要去多看看，多理解技术之外的各种社会现象。(2018/03/30更新)</p>
@@ -796,7 +433,7 @@
 <h1 id="内置数据类型"><a href="#内置数据类型" class="headerlink" title="内置数据类型"></a>内置数据类型</h1><p>内置数据类型是整个C++语言的基石，内置的int，short，long，double，float，char，bool其实是对于内存的一种映射过程，是构成其他任何类的最底层抽象。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2016/02/01/cpp-mechanism/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -808,57 +445,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2015/12/15/ten-games-in-seventh-generation/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -870,35 +472,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2015/12/15/ten-games-in-seventh-generation/" class="post-title-link" itemprop="url">第七世代十大游戏</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2015/12/15/ten-games-in-seventh-generation/" class="post-title-link" itemprop="url">第七世代十大游戏</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -909,45 +495,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-01-05 17:51:17" itemprop="dateModified" datetime="2019-01-05T17:51:17+08:00">2019-01-05</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -955,15 +505,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>电视游戏有世代(generation)的说法，<a href="https://en.wikipedia.org/wiki/Seventh_generation_of_video_game_consoles" target="_blank" rel="noopener">第七世代</a>就是指PS3，XBOX360和Wii了。盘点一下本人心中的十大经典游戏，从第十名往第一名数起。</p>
 <h1 id="Medal-of-Honor"><a href="#Medal-of-Honor" class="headerlink" title="Medal of Honor"></a>Medal of Honor</h1><p>还记得大二(2010)时候参加荣誉勋章的多人Beta，激动万分甚至可以彻夜通宵。发售后仍然挡不住我玩了一百个小时的多人对战。当时看了这个<a href="https://www.youtube.com/watch?v=vaz7r2r_Fik" target="_blank" rel="noopener">多人模式宣传片</a>，真是激动万分。MOH的单人模式是由DICE亲自制作的，讲述的是阿富汗战争中的一个小队执行一系列任务的故事，讲述了美国大兵在阿富汗付出的代价是很沉重的，这个小队最后只剩下了一个队员，每个其他队员都为了美国的“国家安全”做出了不朽贡献。多人模式是Danger Close工作室做的，现在又改名为DICE LA，也是Battlefield 4的后续DLC和“打补丁”工作室。我最喜欢的是里面的枪械音效特别的棒，杀人得分的时候那个亮分的动画特别带感，还有击中时候一个小叉叉也很带感。最有意思的就是狙击手的Mortar了，简直是BUG的存在，运气好可以一次杀五个以上。最后欣赏一下<a href="https://www.youtube.com/watch?v=STi79QpD7mI" target="_blank" rel="noopener">发售宣传片</a>。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2015/12/15/ten-games-in-seventh-generation/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -975,57 +521,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2015/12/14/interesting-things-in-game-industry/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1037,35 +548,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2015/12/14/interesting-things-in-game-industry/" class="post-title-link" itemprop="url">聊聊游戏界的那些事</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2015/12/14/interesting-things-in-game-industry/" class="post-title-link" itemprop="url">聊聊游戏界的那些事</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -1076,45 +571,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-30 21:58:18" itemprop="dateModified" datetime="2019-04-30T21:58:18+08:00">2019-04-30</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -1122,15 +581,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>明天就是PlayStation Experience了，真想飞到美帝去参加盛会。每年都有大量的电子游戏会展会在全世界各地展出，今天我就想趁这个机会聊聊游戏界的电子游戏展会，聊聊电子游戏界的工作室大牛们。</p>
 <h1 id="三大会展"><a href="#三大会展" class="headerlink" title="三大会展"></a>三大会展</h1><p>说到三大会展，就是E3、TGS、Gamescom了。早年也有人说有CJ，我一般都对这个看法持呵呵的观点。当然Gamescom是后起之秀了，算是在2011年DOTA2在Gamescom上首秀之后，越来越多的游戏厂商选择了在每年的8月份在GamesCom上宣传自己的游戏了。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2015/12/14/interesting-things-in-game-industry/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -1142,43 +597,19 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-  </section>
+  </div>
 
   
   <nav class="pagination">
@@ -1191,38 +622,41 @@
           
 
         </div>
-        
           
   
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
   </div>
 
-  <aside id="sidebar" class="sidebar">
+  <aside class="sidebar">
     <div class="sidebar-inner">
 
-      
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
 
-      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
-        <div class="site-overview">
-
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  
-    <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
-  
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="斯旺达克">
   <p class="site-author-name" itemprop="name">斯旺达克</p>
-  <div class="site-description motion-element" itemprop="description">感受生命</div>
+  <div class="site-description" itemprop="description">感受生命</div>
 </div>
-
-
-  <nav class="site-state motion-element">
-    
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
       <div class="site-state-item site-state-posts">
         
           <a href="/archives/">
@@ -1232,10 +666,6 @@
         </a>
       </div>
     
-
-    
-
-    
       
       
       <div class="site-state-item site-state-tags">
@@ -1244,33 +674,14 @@
             <a href="/tags/">
           
         
-        
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
         <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
     
   </nav>
-
-
-
-
-
-
-
+</div>
   <div class="links-of-author motion-element">
-    
       <span class="links-of-author-item">
       
       
@@ -1319,25 +730,13 @@
 
 
 
-
-
-
-
-          
-          
-        </div>
       </div>
-
-      
-
-      
 
     </div>
   </aside>
   <div id="sidebar-dimmer"></div>
 
 
-        
       </div>
     </main>
 
@@ -1348,27 +747,16 @@
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">斯旺达克</span>
-
-  
-
-  
 </div>
-
-
   <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
-
-
-
   <span class="post-meta-divider">|</span>
-
-
-
-  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
-
-
-
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.1</div>
 
         
+
+
+
+
 
 
 
@@ -1385,145 +773,22 @@
 
 
 
-
         
       </div>
     </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-
   </div>
 
   
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=3.4.1"></script>
-
-  
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
   <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
   <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-
-
-  <script src="/js/utils.js?v=7.2.0"></script>
-
-  <script src="/js/motion.js?v=7.2.0"></script>
+<script src="/js/utils.js?v=7.4.1"></script><script src="/js/motion.js?v=7.4.1"></script>
+<script src="/js/schemes/pisces.js?v=7.4.1"></script>
+<script src="/js/next-boot.js?v=7.4.1"></script>
 
 
 
   
-  
-
-
-  <script src="/js/affix.js?v=7.2.0"></script>
-
-  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
-
-
-
-  
-
-  <script src="/js/next-boot.js?v=7.2.0"></script>
-
-  
-
-  
-
-  
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-// GET RESPONSIVE HEIGHT PASSED FROM IFRAME
-
-window.addEventListener("message", function(e) {
-  var data = e.data;
-  if ((typeof data === 'string') && (data.indexOf('ciu_embed') > -1)) {
-    var featureID = data.split(':')[1];
-    var height = data.split(':')[2];
-    $(`iframe[data-feature=${featureID}]`).height(parseInt(height) + 30);
-  }
-}, false);
-</script>
-
-
-
   <script>
     (function(){
       var bp = document.createElement('script');
@@ -1539,7 +804,27 @@ window.addEventListener("message", function(e) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
+
+  
+
+  
+
 
 </body>
 </html>

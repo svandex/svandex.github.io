@@ -4,112 +4,54 @@
 
 
 
-
-
-
-
-
-
-
-  
-
-
-<html class="theme-next pisces use-motion" lang="zh-CN">
-<head><meta name="generator" content="Hexo 3.9.0">
+<html lang="zh-CN">
+<head>
   <meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.1">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.1" color="#222">
 
-
-
-
-
-
-
-
-
-
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
-
-
-
-
-
-
-<link rel="stylesheet" href="/css/main.css?v=7.2.0">
-
-
-
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-
-
-
+<link rel="stylesheet" href="/css/main.css?v=7.4.1">
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
 
 
-
-
-
-
-
-
-<script id="hexo.configurations">
+<script id="hexo-configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
     scheme: 'Pisces',
-    version: '7.2.0',
+    version: '7.4.1',
+    exturl: false,
     sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
-    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
     copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
     fancybox: false,
     mediumzoom: false,
     lazyload: false,
     pangu: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     algolia: {
-      applicationID: '',
+      appID: '',
       apiKey: '',
       indexName: '',
       hits: {"per_page":10},
       labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     translation: {
       copy_button: '复制',
       copy_success: '复制成功',
       copy_failure: '复制失败'
-    }
+    },
+    sidebarPadding: 40
   };
 </script>
 
@@ -123,24 +65,20 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="斯旺达克">
 <meta name="twitter:description" content="感受生命">
-
-
-
-
-
-  
-  
   <link rel="canonical" href="https://blog.svandex.cn/">
 
 
-
-<script id="page.configurations">
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
+    isHome: true,
+    isPost: false,
+    isPage: false,
+    isArchive: false
   };
 </script>
 
-  
   <title>斯旺达克</title>
   
 
@@ -151,13 +89,8 @@
 
 
 
-
-
-
-
   <noscript>
   <style>
-  .use-motion .motion-element,
   .use-motion .brand,
   .use-motion .menu-item,
   .sidebar-inner,
@@ -166,7 +99,7 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
+  .use-motion .collection-header { opacity: initial; }
 
   .use-motion .logo,
   .use-motion .site-title,
@@ -182,177 +115,119 @@
 
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left 
-  page-home">
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
+      <div class="header-inner"><div class="site-brand-container">
   <div class="site-meta">
-    
 
-    <div class="custom-logo-site-title">
+    <div>
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">斯旺达克</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
-    
-      
         <h1 class="site-subtitle" itemprop="description">游戏、历史、电子</h1>
       
-    
-    
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
   </div>
 </div>
-
 
 
 <nav class="site-nav">
   
-    <ul id="menu" class="menu">
+  <ul id="menu" class="menu">
+      
+      
       
         
-        
-        
-          
-          <li class="menu-item menu-item-home menu-item-active">
-
-    
-    
+        <li class="menu-item menu-item-home">
       
     
 
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
+        <li class="menu-item menu-item-archives">
       
     
 
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
+        <li class="menu-item menu-item-tags">
       
     
 
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-书单">
-
-    
-    
+        <li class="menu-item menu-item-书单">
       
     
 
-    
-
-    <a href="/booklist/" rel="section"><i class="menu-item-icon fa fa-fw fa-book"></i> <br>书单</a>
+    <a href="/booklist/" rel="section"><i class="fa fa-fw fa-book"></i>书单</a>
 
   </li>
+      
+      
+      
         
-        
-        
-          
-          <li class="menu-item menu-item-游戏">
-
-    
-    
+        <li class="menu-item menu-item-游戏">
       
     
 
-    
-
-    <a href="/game/" rel="section"><i class="menu-item-icon fa fa-fw fa-gamepad"></i> <br>游戏</a>
+    <a href="/game/" rel="section"><i class="fa fa-fw fa-gamepad"></i>游戏</a>
 
   </li>
+  </ul>
 
-      
-      
-    </ul>
-  
-
-  
-
-  
 </nav>
-
-
-
 </div>
     </header>
 
     
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
 
 
     <main id="main" class="main">
       <div class="main-inner">
         <div class="content-wrap">
-          
             
 
-          
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
-    
-      
 
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  <div class="posts-expand">
+        
   
   
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/10/01/political-critics-during-70th-national-memorial-day/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -364,35 +239,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/01/political-critics-during-70th-national-memorial-day/" class="post-title-link" itemprop="url">70年国庆政评</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2019/10/01/political-critics-during-70th-national-memorial-day/" class="post-title-link" itemprop="url">70年国庆政评</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -403,45 +262,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-06 14:17:04" itemprop="dateModified" datetime="2019-10-06T14:17:04+08:00">2019-10-06</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -449,16 +272,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>今天是国庆节，70年纪念的国庆节。博客托管在外网，所以今天斗胆谈谈敏感的政治评论。</p>
-<h1 id="第二个共和国"><a href="#第二个共和国" class="headerlink" title="第二个共和国"></a>第二个共和国</h1><p>第一个共和国就是中华民国了。据说国共合作的时候，毛泽东还曾经和孙中山会议上见过一面，当时毛泽东应该是共产党上海分部。二十年一代人啊，孙中山比毛泽东差不多就是大了一代。第一个共和国最大的意义，就是让人有了国家的概念。这才有了后续抗日战争那么多爱国人士。大清朝时候，北京城的天朝屁民都是天下大事漠不关己，为什么？因为天下之大莫非王土啊，八国联军进城是打皇帝去了，该卖烧饼的继续卖烧饼，目送八国联军进城火烧圆明园啊。</p>
+<h1 id="第二个共和国"><a href="#第二个共和国" class="headerlink" title="第二个共和国"></a>第二个共和国</h1><p>第一个共和国就是中华民国了。据说国共合作的时候，毛泽东还曾经和孙中山会议上见过一面，当时毛泽东应该是加入国民党上海分部，也算是高层领导所以可以和孙中山一起开会。二十年一代人啊，孙中山比毛泽东差不多就是大了一代多，孙中山是1866年生而毛泽东是1893年生，大了27岁。第一个共和国最大的意义，就是让人有了国家的概念，这才有了后续抗日战争那么多爱国人士。大清朝时候，北京城的天朝屁民都是天下大事漠不关己，为什么？因为天下之大莫非王土啊，八国联军进城是打皇帝去了，该卖烧饼的继续卖烧饼，目送八国联军进城火烧圆明园啊。所以说孙中山的功劳是很大的，虽然很有争议有人说孙中山其实是在美国夏威夷读的书接受了西方的思想，在中国“十次起义”但是辛亥革命最后还是最有实力的袁世凯逼清帝退位，但是孙中山的革命行动真真切切地做到了“民主与共和深入人心”。同时我觉得历史也会终将给袁世凯一个更公平的评价，目前的评价主要还是在于袁世凯和国共两党都没有什么太多交情。但毕竟是首任中华民国大总统且作为当时最有军事实力的一派终结了帝制，对于历史的推进也是有贡献的。</p>
 <p>第二个共和国就是中华人民共和国。中共一大的与会者十三人也仅有毛泽东和董必武两人走到了最后，中间还出了张国焘等叛党分子。张国焘还曾是红四方面军的领导人，与毛泽东的红一方面军在懋功胜利会师，可最后竟落得投奔国民党特务头子戴笠旗下，这样的中共高层叛党危害极大。秋收起义算是毛泽东登上大舞台的序幕吧，1893年生的毛泽东在1927年秋收起义时候也是34岁了，直至1935年遵义会议确定他的领导地位也是42岁了，此时领导的红一方面军也仅有一万人左右，不得不说这创业史真是艰辛万难，可以说中共这些人从1927年到1949年这二十几年生活质量非常差，比不上城里的蒋介石舒坦啊。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2019/10/01/political-critics-during-70th-national-memorial-day/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -470,57 +289,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/08/06/few-thoughts-on-history/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -532,35 +316,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/06/few-thoughts-on-history/" class="post-title-link" itemprop="url">一些历史思考</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2019/08/06/few-thoughts-on-history/" class="post-title-link" itemprop="url">一些历史思考</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -571,45 +339,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-06 14:15:53" itemprop="dateModified" datetime="2019-10-06T14:15:53+08:00">2019-10-06</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -617,16 +349,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>随笔写一些最近想到的事情。</p>
 <h1 id="爱国是历史潮流"><a href="#爱国是历史潮流" class="headerlink" title="爱国是历史潮流"></a>爱国是历史潮流</h1><p>上周末看完了《少帅》电视剧，对于张学良，对于北洋政府到国民政府的故事，有了更深的认识。我一直对于民国历史非常的感兴趣，因为是古代到现在的过渡时期，新旧时代的对比强烈，更能让人对现代社会有更深的理解。什么是民主，什么是共和，社会发展的内在动力是什么，都能在其中找到一些答案。</p>
 <p>最近很火的香港问题，其实就是国家认同感的问题。金一南教授的讲话，其实讲到了一个历史潮流，那就是在20世纪的世界民族独立潮流中，国家意识的觉醒是不可阻挡的。皮之不存，毛将焉附。当年八国联军不到两万人浩浩荡荡进入北京城，老百姓没有任何反抗，有的还帮忙递梯子，根本问题在于老百姓没有对国家认同感，八国联军和皇帝打仗，与屁民何干？古时候的人讲天下之大莫非王土，反正不是老百姓的土，没有归属感只有顺从和奴性。只有家族社会，而没有国家意识。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2019/08/06/few-thoughts-on-history/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -638,57 +366,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/04/26/start-on-iis-cpp-development/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -700,35 +393,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/26/start-on-iis-cpp-development/" class="post-title-link" itemprop="url">初探IIS中的C++多线程开发</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2019/04/26/start-on-iis-cpp-development/" class="post-title-link" itemprop="url">初探IIS中的C++多线程开发</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -739,45 +416,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-24 00:25:07" itemprop="dateModified" datetime="2019-07-24T00:25:07+08:00">2019-07-24</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -785,16 +426,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。</p>
 <p>但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好的，有些库甚至在Linux上就没有。典型的比如西门子的PLC产品对Linux的支持就非常的差，国家仪器的DAQMX系列库也是对Windows的兼容性最好，支持的设备也非常多。由于日常和试验设备都需要使用这些库，所以只能在Windows上开发，而最好的服务端开发框架就是IIS了。</p>
 <p>不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2019/04/26/start-on-iis-cpp-development/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -806,57 +443,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/01/02/reading-plan-in-2019/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -868,35 +470,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/02/reading-plan-in-2019/" class="post-title-link" itemprop="url">2019年读书计划</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2019/01/02/reading-plan-in-2019/" class="post-title-link" itemprop="url">2019年读书计划</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -907,45 +493,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-01-15 13:38:42" itemprop="dateModified" datetime="2019-01-15T13:38:42+08:00">2019-01-15</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -953,15 +503,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>又迈入了新的一年。今年更想着重于历史书籍的阅读，注重文化方面的提升。因为我越来越想成为编剧了，我想去做文化产品，我觉得国内这方面的市场应该是非常巨大的。在整个历史长河中，我们<a href="https://www.gov.cn/zhuanti/xxczh/" target="_blank" rel="noopener">中国人的城镇化</a>也达到了世界平均水平，国家也有了<a href="https://www.gov.cn/zhengce/2014-03/16/content_2640075.htm" target="_blank" rel="noopener">《国家新型城镇化规划(2014-2020年)》</a>，我们中国人要在2020年脱贫了。虽然还有很多人的生活需要为物质奔波，但是我们国家也有很多人对于文化产品有很多的需求。人的一生短短几十年体验，用文化拓展自己的人生体验，我想这对于每个人来说都非常的有吸引力。</p>
 <h1 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h1><p>去年想要看完的《the cambridge history of china》还是没有启动，还是很惭愧的。2018年遇上了几本好书，比如吕思勉的《中国通史》，上篇按主题比如婚姻、族制等，下篇就是编年史。还有冯友兰的《中国哲学史》，哲学的概念应该是来自于西方的，冯友兰算是新儒家学说的代表人物之一，人生的履历经历了旧中国和新中国，西方民主科学思想的冲击和对中国传统的坚守，融会贯通写下了对中国哲学思想的总结。当然写中国哲学史的还有好几位，比如胡适，都是可以相互借鉴的来看看。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2019/01/02/reading-plan-in-2019/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -973,57 +519,22 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-      
-
-  
-
+        
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2018/12/09/recent-news-amazing/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1035,35 +546,19 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="斯旺达克">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/09/recent-news-amazing/" class="post-title-link" itemprop="url">总想搞个大新闻</a>
-              
+        <h2 class="post-title" itemprop="name headline">
             
-          </h2>
-        
+            <a href="/2018/12/09/recent-news-amazing/" class="post-title-link" itemprop="url">总想搞个大新闻</a>
+          
+        </h2>
 
         <div class="post-meta">
-
-          
-          
-          
-
-          
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
@@ -1074,45 +569,9 @@
           
 
           
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-01-05 17:51:04" itemprop="dateModified" datetime="2019-01-05T17:51:04+08:00">2019-01-05</time>
-              </span>
-            
-          
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          <br>
-          
-
-          
-
-          
 
         </div>
       </header>
-    
 
     
     
@@ -1120,16 +579,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
-        
           <p>年底了大新闻还是不少的，写一些最近比较关心的事情。</p>
 <h1 id="战神获得TGA2018年度游戏"><a href="#战神获得TGA2018年度游戏" class="headerlink" title="战神获得TGA2018年度游戏"></a>战神获得TGA2018年度游戏</h1><p>实至名归！这是我在看<a href="https://thegameawards.com" target="_blank" rel="noopener">TGA2018</a>直播时的第一反应。作为索尼第一方作品，<a href="http://sms.playstation.com" target="_blank" rel="noopener">Santa Monica</a>的制作水准不用怀疑。精美的画面和操作手感都是一流的，之前玩过<a href="https://en.wikipedia.org/wiki/God_of_War:_Ascension" target="_blank" rel="noopener">战神升天</a>(god of war ascension)，所以这次视角变换心里还有些疑惑。但是上手之后感觉这手感实在是太好了，画面冲击感特别强，尤其是终极必杀的画面还是很震撼的。最关键的是游戏采用的<a href="https://www.eurogamer.net/articles/2017-06-21-god-of-war-director-explains-why-the-entire-game-has-no-camera-cuts" target="_blank" rel="noopener">一镜到底</a>，印象实在是太深了，这对于摄影的技巧太高了。如何移动摄像机，又能够把事情描述清楚，还能够展现画面，非常靠实力。</p>
 <p>唯一的遗憾，不能说是缺点就是这是个三部曲作品。作为第一作，你玩到最后虽然会解开谜题，让你眼前一亮；不过结束的太突兀了，让你觉得后面故事会怎样，好想赶紧玩。而对于read dead redemption 2来说，这是好作品；但是只能说生不逢时，我也很喜欢RDR2，也喜欢西部风格和那些配乐，但是从心里来说没有战神带给我的震撼那么多，冲击力那么强。</p>
           <!--noindex-->
           
-            <div class="post-button text-center">
+            <div class="post-button">
               <a class="btn" href="/2018/12/09/recent-news-amazing/" rel="contents">
                 阅读全文 &raquo;
               </a>
@@ -1141,43 +596,19 @@
     </div>
 
     
-
-    
-
     
     
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
   </article>
-
+  
+  
+  
 
     
-  </section>
+  </div>
 
   
   <nav class="pagination">
@@ -1190,38 +621,41 @@
           
 
         </div>
-        
           
   
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
   </div>
 
-  <aside id="sidebar" class="sidebar">
+  <aside class="sidebar">
     <div class="sidebar-inner">
 
-      
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
 
-      
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
-        <div class="site-overview">
-
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  
-    <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="斯旺达克">
-  
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="斯旺达克">
   <p class="site-author-name" itemprop="name">斯旺达克</p>
-  <div class="site-description motion-element" itemprop="description">感受生命</div>
+  <div class="site-description" itemprop="description">感受生命</div>
 </div>
-
-
-  <nav class="site-state motion-element">
-    
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
       <div class="site-state-item site-state-posts">
         
           <a href="/archives/">
@@ -1231,10 +665,6 @@
         </a>
       </div>
     
-
-    
-
-    
       
       
       <div class="site-state-item site-state-tags">
@@ -1243,33 +673,14 @@
             <a href="/tags/">
           
         
-        
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
         <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
     
   </nav>
-
-
-
-
-
-
-
+</div>
   <div class="links-of-author motion-element">
-    
       <span class="links-of-author-item">
       
       
@@ -1318,25 +729,13 @@
 
 
 
-
-
-
-
-          
-          
-        </div>
       </div>
-
-      
-
-      
 
     </div>
   </aside>
   <div id="sidebar-dimmer"></div>
 
 
-        
       </div>
     </main>
 
@@ -1347,27 +746,16 @@
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">斯旺达克</span>
-
-  
-
-  
 </div>
-
-
   <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
-
-
-
   <span class="post-meta-divider">|</span>
-
-
-
-  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
-
-
-
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.1</div>
 
         
+
+
+
+
 
 
 
@@ -1384,145 +772,22 @@
 
 
 
-
         
       </div>
     </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-
   </div>
 
   
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=3.4.1"></script>
-
-  
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
   <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
   <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-
-
-  <script src="/js/utils.js?v=7.2.0"></script>
-
-  <script src="/js/motion.js?v=7.2.0"></script>
+<script src="/js/utils.js?v=7.4.1"></script><script src="/js/motion.js?v=7.4.1"></script>
+<script src="/js/schemes/pisces.js?v=7.4.1"></script>
+<script src="/js/next-boot.js?v=7.4.1"></script>
 
 
 
   
-  
-
-
-  <script src="/js/affix.js?v=7.2.0"></script>
-
-  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
-
-
-
-  
-
-  <script src="/js/next-boot.js?v=7.2.0"></script>
-
-  
-
-  
-
-  
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-// GET RESPONSIVE HEIGHT PASSED FROM IFRAME
-
-window.addEventListener("message", function(e) {
-  var data = e.data;
-  if ((typeof data === 'string') && (data.indexOf('ciu_embed') > -1)) {
-    var featureID = data.split(':')[1];
-    var height = data.split(':')[2];
-    $(`iframe[data-feature=${featureID}]`).height(parseInt(height) + 30);
-  }
-}, false);
-</script>
-
-
-
   <script>
     (function(){
       var bp = document.createElement('script');
@@ -1538,7 +803,27 @@ window.addEventListener("message", function(e) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
+
+  
+
+  
+
 
 </body>
 </html>
