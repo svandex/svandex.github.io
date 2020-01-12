@@ -1,34 +1,30 @@
 <!DOCTYPE html>
-
-
-
-
-
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 3.9.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.1">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.1">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.1">
-  <link rel="mask-icon" href="/images/logo.svg?v=7.4.1" color="#222">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/css/main.css?v=7.4.1">
+<link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
 
 
 <script id="hexo-configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
+    hostname: new URL('https://blog.svandex.cn').hostname,
     root: '/',
     scheme: 'Pisces',
-    version: '7.4.1',
+    version: '7.7.0',
     exturl: false,
-    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
     copycode: {"enable":false,"show_result":false,"style":null},
     back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
     bookmark: {"enable":false,"color":"#222","save":"auto"},
@@ -36,6 +32,7 @@
     mediumzoom: false,
     lazyload: false,
     pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
     algolia: {
       appID: '',
       apiKey: '',
@@ -45,13 +42,7 @@
     },
     localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
     path: '',
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    translation: {
-      copy_button: '复制',
-      copy_success: '复制成功',
-      copy_failure: '复制失败'
-    },
-    sidebarPadding: 40
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
   };
 </script>
 
@@ -65,7 +56,8 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="斯旺达克">
 <meta name="twitter:description" content="感受生命">
-  <link rel="canonical" href="https://blog.svandex.cn/">
+
+<link rel="canonical" href="https://blog.svandex.cn/">
 
 
 <script id="page-configurations">
@@ -73,16 +65,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome: true,
-    isPost: false,
-    isPage: false,
-    isArchive: false
+    isPost: false
   };
 </script>
 
   <title>斯旺达克</title>
   
-
-
 
 
 
@@ -101,7 +89,6 @@
   .use-motion .post-body,
   .use-motion .collection-header { opacity: initial; }
 
-  .use-motion .logo,
   .use-motion .site-title,
   .use-motion .site-subtitle {
     opacity: initial;
@@ -119,7 +106,7 @@
   <div class="container use-motion">
     <div class="headband"></div>
 
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-container">
   <div class="site-meta">
 
@@ -147,57 +134,27 @@
 <nav class="site-nav">
   
   <ul id="menu" class="menu">
-      
-      
-      
-        
         <li class="menu-item menu-item-home">
-      
-    
 
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
 
   </li>
-      
-      
-      
-        
         <li class="menu-item menu-item-archives">
-      
-    
 
     <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
 
   </li>
-      
-      
-      
-        
         <li class="menu-item menu-item-tags">
-      
-    
 
     <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
 
   </li>
-      
-      
-      
-        
         <li class="menu-item menu-item-书单">
-      
-    
 
     <a href="/booklist/" rel="section"><i class="fa fa-fw fa-book"></i>书单</a>
 
   </li>
-      
-      
-      
-        
         <li class="menu-item menu-item-游戏">
-      
-    
 
     <a href="/game/" rel="section"><i class="fa fa-fw fa-gamepad"></i>游戏</a>
 
@@ -215,12 +172,12 @@
   </div>
 
 
-    <main id="main" class="main">
+    <main class="main">
       <div class="main-inner">
         <div class="content-wrap">
-            
+          
 
-          <div id="content" class="content">
+          <div class="content">
             
 
   <div class="posts-expand">
@@ -231,9 +188,9 @@
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/11/16/guide-to-internet-over-great-wall/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
-      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -241,9 +198,8 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/11/16/guide-to-internet-over-great-wall/" class="post-title-link" itemprop="url">科学上网指南</a>
           
+            <a href="/2019/11/16/guide-to-internet-over-great-wall/" class="post-title-link" itemprop="url">科学上网指南</a>
         </h2>
 
         <div class="post-meta">
@@ -253,13 +209,8 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              
-                
-              
-
               <time title="创建时间：2019-11-16 19:24:32" itemprop="dateCreated datePublished" datetime="2019-11-16T19:24:32+08:00">2019-11-16</time>
             </span>
-          
 
           
 
@@ -276,13 +227,11 @@
 <h1 id="出发点"><a href="#出发点" class="headerlink" title="出发点"></a>出发点</h1><p>那么我们为什么要科学上网呢？其实我觉得长城的本意和出发点是比较好的，敌对势力实在太多了，确实需要屏蔽掉，而且还有很多涉及犯罪的网站都没有必要去浏览。但是长城的筛选功能太粗了，做不到精细化，导致有很多很好的网站同时也是被屏蔽掉了。举个简单的例子，我是个游戏爱好者，其实在国外流行的论坛里有很多一手的游戏资讯，国内跟进的实在是太慢了，比如reddit被国内玩家戏称为美国百度；还有像facebook和twitter上很多游戏开发商的账户，公布的都是一手的资讯。</p>
 <p>长城还有一点当然就是中共的私心了，就是屏蔽掉对自己不利的资讯。党派总是得先存在才能执政了，就像任何领导底线总得是先保住位置再说工作的事情了。</p>
           <!--noindex-->
-          
             <div class="post-button">
-              <a class="btn" href="/2019/11/16/guide-to-internet-over-great-wall/" rel="contents">
+              <a class="btn" href="/2019/11/16/guide-to-internet-over-great-wall/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
-          
           <!--/noindex-->
         
       
@@ -292,15 +241,13 @@
     
     
       <footer class="post-footer">
-          <div class="post-eof"></div>
-        
+        <div class="post-eof"></div>
       </footer>
   </article>
   
   
   
 
-    
         
   
   
@@ -308,9 +255,9 @@
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/10/01/political-critics-during-70th-national-memorial-day/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
-      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -318,9 +265,8 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/10/01/political-critics-during-70th-national-memorial-day/" class="post-title-link" itemprop="url">70年国庆政评</a>
           
+            <a href="/2019/10/01/political-critics-during-70th-national-memorial-day/" class="post-title-link" itemprop="url">70年国庆政评</a>
         </h2>
 
         <div class="post-meta">
@@ -330,13 +276,8 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              
-                
-              
-
               <time title="创建时间：2019-10-01 23:37:01" itemprop="dateCreated datePublished" datetime="2019-10-01T23:37:01+08:00">2019-10-01</time>
             </span>
-          
 
           
 
@@ -354,13 +295,11 @@
 <p>所以说孙中山的功劳是很大的。虽然他还是很有争议的，在中国“十次起义”都没有成功，辛亥革命也是黄兴发起的他当时还在海外，辛亥革命的最后革命军其实还真不一定打的过袁世凯，还是最有实力的袁世凯逼清帝退位，但是孙中山的革命行动真真切切地做到了“民主与共和深入人心”，他在海外的社会运动成立兴中会和同盟会，还接纳了致公堂的资助进行活动都非常的有影响力，这些活动都唤醒了国人的凝聚力。</p>
 <p>同时我觉得历史也会终将给袁世凯一个更公平的评价，目前的评价主要还是在于袁世凯和国共两党都没有什么太多交情。但毕竟是首任中华民国大总统且作为当时最有军事实力的一派终结了帝制，对于历史的推进也是有贡献的。</p>
           <!--noindex-->
-          
             <div class="post-button">
-              <a class="btn" href="/2019/10/01/political-critics-during-70th-national-memorial-day/" rel="contents">
+              <a class="btn" href="/2019/10/01/political-critics-during-70th-national-memorial-day/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
-          
           <!--/noindex-->
         
       
@@ -370,15 +309,13 @@
     
     
       <footer class="post-footer">
-          <div class="post-eof"></div>
-        
+        <div class="post-eof"></div>
       </footer>
   </article>
   
   
   
 
-    
         
   
   
@@ -386,9 +323,9 @@
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/08/06/few-thoughts-on-history/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
-      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -396,9 +333,8 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/08/06/few-thoughts-on-history/" class="post-title-link" itemprop="url">一些历史思考</a>
           
+            <a href="/2019/08/06/few-thoughts-on-history/" class="post-title-link" itemprop="url">一些历史思考</a>
         </h2>
 
         <div class="post-meta">
@@ -408,13 +344,8 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              
-                
-              
-
               <time title="创建时间：2019-08-06 00:49:54" itemprop="dateCreated datePublished" datetime="2019-08-06T00:49:54+08:00">2019-08-06</time>
             </span>
-          
 
           
 
@@ -431,13 +362,11 @@
 <h1 id="爱国是历史潮流"><a href="#爱国是历史潮流" class="headerlink" title="爱国是历史潮流"></a>爱国是历史潮流</h1><p>上周末看完了《少帅》电视剧，对于张学良，对于北洋政府到国民政府的故事，有了更深的认识。我一直对于民国历史非常的感兴趣，因为是古代到现在的过渡时期，新旧时代的对比强烈，更能让人对现代社会有更深的理解。什么是民主，什么是共和，社会发展的内在动力是什么，都能在其中找到一些答案。</p>
 <p>最近很火的香港问题，其实就是国家认同感的问题。金一南教授的讲话，其实讲到了一个历史潮流，那就是在20世纪的世界民族独立潮流中，国家意识的觉醒是不可阻挡的。皮之不存，毛将焉附。当年八国联军不到两万人浩浩荡荡进入北京城，老百姓没有任何反抗，有的还帮忙递梯子，根本问题在于老百姓没有对国家认同感，八国联军和皇帝打仗，与屁民何干？古时候的人讲天下之大莫非王土，反正不是老百姓的土，没有归属感只有顺从和奴性。只有家族社会，而没有国家意识。</p>
           <!--noindex-->
-          
             <div class="post-button">
-              <a class="btn" href="/2019/08/06/few-thoughts-on-history/" rel="contents">
+              <a class="btn" href="/2019/08/06/few-thoughts-on-history/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
-          
           <!--/noindex-->
         
       
@@ -447,15 +376,13 @@
     
     
       <footer class="post-footer">
-          <div class="post-eof"></div>
-        
+        <div class="post-eof"></div>
       </footer>
   </article>
   
   
   
 
-    
         
   
   
@@ -463,9 +390,9 @@
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/04/26/start-on-iis-cpp-development/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
-      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -473,9 +400,8 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/04/26/start-on-iis-cpp-development/" class="post-title-link" itemprop="url">初探IIS中的C++多线程开发</a>
           
+            <a href="/2019/04/26/start-on-iis-cpp-development/" class="post-title-link" itemprop="url">初探IIS中的C++多线程开发</a>
         </h2>
 
         <div class="post-meta">
@@ -485,13 +411,8 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              
-                
-              
-
               <time title="创建时间：2019-04-26 23:36:44" itemprop="dateCreated datePublished" datetime="2019-04-26T23:36:44+08:00">2019-04-26</time>
             </span>
-          
 
           
 
@@ -508,13 +429,11 @@
 <p>但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好的，有些库甚至在Linux上就没有。典型的比如西门子的PLC产品对Linux的支持就非常的差，国家仪器的DAQMX系列库也是对Windows的兼容性最好，支持的设备也非常多。由于日常和试验设备都需要使用这些库，所以只能在Windows上开发，而最好的服务端开发框架就是IIS了。</p>
 <p>不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。</p>
           <!--noindex-->
-          
             <div class="post-button">
-              <a class="btn" href="/2019/04/26/start-on-iis-cpp-development/" rel="contents">
+              <a class="btn" href="/2019/04/26/start-on-iis-cpp-development/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
-          
           <!--/noindex-->
         
       
@@ -524,15 +443,13 @@
     
     
       <footer class="post-footer">
-          <div class="post-eof"></div>
-        
+        <div class="post-eof"></div>
       </footer>
   </article>
   
   
   
 
-    
         
   
   
@@ -540,9 +457,9 @@
     <link itemprop="mainEntityOfPage" href="https://blog.svandex.cn/2019/01/02/reading-plan-in-2019/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="斯旺达克">
       <meta itemprop="description" content="感受生命">
-      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -550,9 +467,8 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/01/02/reading-plan-in-2019/" class="post-title-link" itemprop="url">2019年读书计划</a>
           
+            <a href="/2019/01/02/reading-plan-in-2019/" class="post-title-link" itemprop="url">2019年读书计划</a>
         </h2>
 
         <div class="post-meta">
@@ -562,13 +478,8 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              
-                
-              
-
               <time title="创建时间：2019-01-02 22:33:09" itemprop="dateCreated datePublished" datetime="2019-01-02T22:33:09+08:00">2019-01-02</time>
             </span>
-          
 
           
 
@@ -584,13 +495,11 @@
           <p>又迈入了新的一年。今年更想着重于历史书籍的阅读，注重文化方面的提升。因为我越来越想成为编剧了，我想去做文化产品，我觉得国内这方面的市场应该是非常巨大的。在整个历史长河中，我们<a href="https://www.gov.cn/zhuanti/xxczh/" target="_blank" rel="noopener">中国人的城镇化</a>也达到了世界平均水平，国家也有了<a href="https://www.gov.cn/zhengce/2014-03/16/content_2640075.htm" target="_blank" rel="noopener">《国家新型城镇化规划(2014-2020年)》</a>，我们中国人要在2020年脱贫了。虽然还有很多人的生活需要为物质奔波，但是我们国家也有很多人对于文化产品有很多的需求。人的一生短短几十年体验，用文化拓展自己的人生体验，我想这对于每个人来说都非常的有吸引力。</p>
 <h1 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h1><p>去年想要看完的《the cambridge history of china》还是没有启动，还是很惭愧的。2018年遇上了几本好书，比如吕思勉的《中国通史》，上篇按主题比如婚姻、族制等，下篇就是编年史。还有冯友兰的《中国哲学史》，哲学的概念应该是来自于西方的，冯友兰算是新儒家学说的代表人物之一，人生的履历经历了旧中国和新中国，西方民主科学思想的冲击和对中国传统的坚守，融会贯通写下了对中国哲学思想的总结。当然写中国哲学史的还有好几位，比如胡适，都是可以相互借鉴的来看看。</p>
           <!--noindex-->
-          
             <div class="post-button">
-              <a class="btn" href="/2019/01/02/reading-plan-in-2019/" rel="contents">
+              <a class="btn" href="/2019/01/02/reading-plan-in-2019/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
-          
           <!--/noindex-->
         
       
@@ -600,15 +509,13 @@
     
     
       <footer class="post-footer">
-          <div class="post-eof"></div>
-        
+        <div class="post-eof"></div>
       </footer>
   </article>
   
   
   
 
-    
   </div>
 
   
@@ -620,6 +527,28 @@
 
           </div>
           
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
 
         </div>
           
@@ -649,83 +578,41 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image"
-      src="/images/avatar.jpg"
-      alt="斯旺达克">
+    <img class="site-author-image" itemprop="image" alt="斯旺达克"
+      src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">斯旺达克</p>
   <div class="site-description" itemprop="description">感受生命</div>
 </div>
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-        
           <a href="/archives/">
         
           <span class="site-state-item-count">19</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
-    
-      
-      
       <div class="site-state-item site-state-tags">
-        
-          
             <a href="/tags/">
           
-        
         <span class="site-state-item-count">5</span>
-        <span class="site-state-item-name">标签</span>
-        </a>
+        <span class="site-state-item-name">标签</span></a>
       </div>
-    
   </nav>
 </div>
   <div class="links-of-author motion-element">
       <span class="links-of-author-item">
-      
-      
-        
-      
-      
-        
-      
-        <a href="https://github.com/svandex" title="Github &rarr; https://github.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>Github</a>
+        <a href="https://github.com/svandex" title="Github → https://github.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>Github</a>
       </span>
-    
       <span class="links-of-author-item">
-      
-      
-        
-      
-      
-        
-      
-        <a href="https://weibo.com/svandex" title="Weibo &rarr; https://weibo.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+        <a href="https://weibo.com/svandex" title="Weibo → https://weibo.com/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
       </span>
-    
       <span class="links-of-author-item">
-      
-      
-        
-      
-      
-        
-      
-        <a href="https://steamcommunity.com/id/svandex" title="Steam &rarr; https://steamcommunity.com/id/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+        <a href="https://steamcommunity.com/id/svandex" title="Steam → https://steamcommunity.com/id/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
       </span>
-    
       <span class="links-of-author-item">
-      
-      
-        
-      
-      
-        
-      
-        <a href="https://my.playstation.com/profile/svandex" title="PlayStation &rarr; https://my.playstation.com/profile/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-gamepad"></i>PlayStation</a>
+        <a href="https://my.playstation.com/profile/svandex" title="PlayStation → https://my.playstation.com/profile/svandex" rel="noopener" target="_blank"><i class="fa fa-fw fa-gamepad"></i>PlayStation</a>
       </span>
-    
   </div>
 
 
@@ -740,17 +627,24 @@
       </div>
     </main>
 
-    <footer id="footer" class="footer">
+    <footer class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2015 – <span itemprop="copyrightYear">2019</span>
-  <span class="with-love" id="animate">
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">斯旺达克</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
   <span class="post-meta-divider">|</span>
-  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.1</div>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
 
         
 
@@ -761,30 +655,17 @@
 
 
 
-  <script>
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "//tajs.qq.com/stats?sId=66127678";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
-
-
-
-
-        
       </div>
     </footer>
   </div>
 
   
-  <script src="/lib/anime.min.js?v=3.1.0"></script>
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-<script src="/js/utils.js?v=7.4.1"></script><script src="/js/motion.js?v=7.4.1"></script>
-<script src="/js/schemes/pisces.js?v=7.4.1"></script>
-<script src="/js/next-boot.js?v=7.4.1"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
 
 
 
@@ -812,14 +693,6 @@
 
 
 
-
-
-
-
-
-
-
-  
 
   
 
