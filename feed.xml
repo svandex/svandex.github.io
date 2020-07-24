@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>斯旺达克</title>
-    <description>建议安装Noto Sans CJK字体浏览博客
+    <description>建议安装Noto Sans SC字体浏览博客
 </description>
     <link>https://svandex.github.io/</link>
     <atom:link href="https://svandex.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 25 Jul 2020 00:26:16 +0800</pubDate>
-    <lastBuildDate>Sat, 25 Jul 2020 00:26:16 +0800</lastBuildDate>
+    <pubDate>Sat, 25 Jul 2020 00:37:54 +0800</pubDate>
+    <lastBuildDate>Sat, 25 Jul 2020 00:37:54 +0800</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
