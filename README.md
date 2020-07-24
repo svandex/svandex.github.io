@@ -1,24 +1,7 @@
-# Libretto - Jekyll Theme
+# 个人博客
 
-Libretto is a responsive one-column Jekyll theme with classic styling and careful typographic details.
+博客风格改自[Libretto](https://ferrolho.github.io/jekyll-theme-libretto)，该风格改自Wordpress中的风格[Libretto Wordpress theme](https://wordpress.org/themes/libretto/)，感谢@ferrolho的移植。
 
-Based on the [Libretto Wordpress theme](https://wordpress.org/themes/libretto/).
+我主要修改了默认字体和主页，主页以列表形式显示更加简洁，字体主要用到了Noto Sans SC更加美观。
 
-## Install and Test
-
-1. Download or clone the repo
-  - `git clone git@github.com:ferrolho/jekyll-theme-libretto.git`
-2. Enter the folder
-  - `cd jekyll-theme-libretto/`
-3. Start Jekyll server
-  - `jekyll serve --watch`
-4. Access via
-  - http://127.0.0.1:4000/jekyll-theme-libretto/
-
-## Demo
-
-- https://ferrolho.github.io/jekyll-theme-libretto/
-
-## Preview
-
-![Theme preview](http://i.imgur.com/2ZCmoKo.png)
+主要更新代码，电子产品和历史相关的所见所想。
