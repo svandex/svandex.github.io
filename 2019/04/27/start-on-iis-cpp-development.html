@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • 初探IIS中的C++多线程开发">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>初探IIS中的C++多线程开发</title>
+	<meta name="description" content="最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。但是...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2019/04/27/start-on-iis-cpp-development.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2019年04月27日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">初探IIS中的C++多线程开发</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。</p>
+
+<p>但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好的，有些库甚至在Linux上就没有。典型的比如西门子的PLC产品对Linux的支持就非常的差，国家仪器的DAQMX系列库也是对Windows的兼容性最好，支持的设备也非常多。由于日常和试验设备都需要使用这些库，所以只能在Windows上开发，而最好的服务端开发框架就是IIS了。</p>
+
+<p>不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。
+<!-- more --></p>
+
+<h1 id="iisc开发简介">IIS/C++开发简介</h1>
+<p>首先要明确的一点是，IIS/C++开发是多线程开发，是不能够假想程序是按照管线顺序进行的。当你用Visual Studio开始debug模块的时候，你会发现除了主线程MainThread外，还有nativerd.dll线程，四个ntdll.dll!TppWorkerThread，以及四个w3tp.dll线程。如果你加载的模块越多的话，运行时的线程越多。而我们的程序主要就是跑在w3tp.dll上的线程，当你进行多线程调试的时候，可以切换这四个线程进行观察。所以如果你没有多线程开发的基础知识，没有看过«C++ Concurrency in Action»这本书，我劝你先补充点基础知识，花上一个月好好看一下。否则写出来的程序会很糟糕，很多功能无法实现。</p>
+
+<p>主要是分两种：模块和处理程序。处理程序的英文是handler，它是针对特定URL或者特定文件格式才会响应的；而模块是针对所有的请求都会执行相同的操作，我们一般只要写处理程序就好了，比如专门用于登陆的处理程序接受发送到<code class="language-plaintext highlighter-rouge">/login</code>的消息。模块开发又分为CGlobalModule和CHttpModule两种，每种对应的事件响应函数都不太相同，而且都需要注册相应的事件响应函数才能触发。两种模块最基本的开发方式看微软官网的<a href="https://docs.microsoft.com/en-us/iis/develop/runtime-extensibility/develop-a-native-cc-module-for-iis">文档</a>就能够很快的理解，这里不再蜇述。其实模块开发就<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/web-server-core-classes">两个类</a>，官网上都有介绍。更多的使用到了接口，常见的比如IHttpContext是用的最多的，通过他可以获取到比如连接IHttpConnection，请求IHttpRequest，返回IHttpResponse等对象，然后在这些对象基础上实现你要的功能。</p>
+
+<p>说到接口就谈一下<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/httpgetextendedinterface-function">HttpGetExtendedInterface</a>这个函数。因为IIS是在不断的版本更新中，IHttpContext也有了很多的版本，最新到就是IHttpContext4增加了记录运行时间的功能。要得到这些新的HTTP上下文接口要使用这个函数，比如：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>IHttpServer* pHttpServer;
+
+//两个版本的IHttpContext
+IHttpContext* pHttpContext;
+IHttpContext3* pHttpContext3;
+
+//接口升级，原接口也还能用
+HttpGetExtendedInterface(pHttpServer,pHttpContext,&amp;pHttpContext3);
+</code></pre></div></div>
+
+<p>这样你就可以用pHttpContext3来做一些别的工作，比如后面会讲到的IWebSocketContext来进行WebSocket协议通信。还有想要提到的是IHttpContext有个函数是<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpcontext-allocaterequestmemory-method">AllocateRequestMemory</a>，类似于malloc的功能可以分配一段内存用来初始化，而IHttpContext的生命周期是整个请求处理管线，这样就能解决堆内存的问题。不过有个问题是，你需要通过移动复制运算符将对象写入到这个内存中去，对移动构造函数和移动赋值运算符的理解要够深，尤其是对象内带指针的话。</p>
+
+<p>除此之外，还有个很重要的接口是IHttpStoredContext，可以在该接口上派生新的类来实现变量的管理，从而实现特定的功能。比如IWebSocketContext其实就是派生自IHttpStoredContext，专门用来处理WebSocket协议的通信问题，我们可以借鉴这种方式。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>IWebSocketContext* pWebSocket=IHttpContext3-&gt;GetNamedContextContainer()-&gt;GetNamedContext(IIS_WEBSOCKET)
+</code></pre></div></div>
+<p>这里要引入头文件<code class="language-plaintext highlighter-rouge">iiswebsocket.h</code>才能使用IWebSocketContext，还有<code class="language-plaintext highlighter-rouge">IIS_WEBSOCKT</code>是宏定义宽字符串<code class="language-plaintext highlighter-rouge">L"websockets"</code>。我们可以仿照这种方式通过调用<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/inamedcontextcontainer-setnamedcontext">SetNamedContext</a>函数来设定我们自己的IHttpStoredContext进行特定功能的实现，而且通过这种设置IHttpStoredContext方式，可以在不同的线程中通过GetNamedContext来获取到，解决了多线程中变量传递。</p>
+
+<h1 id="编译">编译</h1>
+<p>单独拿出来说是因为我在这上面就花了一周的时间才解决。因为模块是dll，IIS会调用模块的RegisterModule函数进行注册，所以你的dll要和IIS有相同的二进制边界，就是要用相同的编译器编译的才能够使你的模块有效。因此你需要使用Visual Studio安装文件路径下<code class="language-plaintext highlighter-rouge">/Community/VC/Auxiliary/Build/vcvarsall.bat</code>这个脚本文件进行编译器版本切换，比如切换成14.13版本的编译器，可以在cmd中输入<code class="language-plaintext highlighter-rouge">vcvarsall.bat amd64 -vcvars_ver=14.13</code>，然后再用cmake将你的代码转换成Visual Studio解决方案，我很推荐这样做是因为Visual Studio对后续你的多线程程序调试很有帮助。</p>
+
+<p>我们可以通过命令行环境下的dumpbin二进制分析工具了解IIS的模块都需要哪些二进制边界条件。IIS的模块都在<code class="language-plaintext highlighter-rouge">C:\Windows\System32\inetsrv</code>文件夹里，比如里面的iiswsock.dll就是官方的WebSocket模块。我们通过命令<code class="language-plaintext highlighter-rouge">dumpbin /headers iiswsock.dll</code>可以看到几个信息：</p>
+
+<ul>
+  <li>链接器版本是14.13，所以我们的编译器版本要设置为14.13</li>
+  <li>子系统版本是10.00，也即是Windows 10</li>
+  <li>子系统序号是3，也就是Windows CUI程序，既是控制台程序</li>
+  <li>DLL特性里面有Control Flow Guard</li>
+</ul>
+
+<p>通过上述分析，我们需要在CMakeLists.txt文件中增加链接相关的选项：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>target_link_options(&lt;ModuleName&gt; PRIVATE "/SUBSYSTEM:CONSOLE,10.00")
+target_link_options(&lt;ModuleName&gt; PRIVATE "/GUARD:CF")
+target_link_options(&lt;ModuleName&gt; PRIVATE "/VERSION:10.00")
+target_link_options(&lt;ModuleName&gt; PRIVATE "/EXPORT:RegisterModule")
+</code></pre></div></div>
+
+<p>最后一个链接选项是导出RegisterModule函数，才能够被IIS调用。还有就是最好通过<code class="language-plaintext highlighter-rouge">target_compile_definitions</code>定义宏<code class="language-plaintext highlighter-rouge">WIN32_LEAN_AND_MEAN</code>，宏<code class="language-plaintext highlighter-rouge">UNICODE</code>，宏<code class="language-plaintext highlighter-rouge">_UNICODE</code>解决一些宽字符等问题。</p>
+
+<p>编译完后，在加载到IIS中之前，需要把相关的dll都放在你的模块dll文件夹中，或者至少要在PATH路径中。而且模块所在的文件夹一定要加入IIS_USR这个用户的权限，这个用户在查找用户中点击高级，然后搜索才能找到，直接搜IIS是搜不到的。很想吐槽微软的安全机制太繁琐了，IIS中各种非登陆用户搞得让人头大。</p>
+
+<h1 id="请求处理管线">请求处理管线</h1>
+
+<p>IIS的请求处理管线分为请求模块CHttpModule和全局模块的CGlobalModule，其中请求模块有12个必然性事件(Deterministic request event)，就是你注册一定会发生的，这些没有太多讲的。需要讲的是5个非必然性事件，其中重点就是<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/chttpmodule-onasynccompletion-method">OnAsyncCompletion</a>，这是给我们带来巨大的开发困难的函数，也是困扰了我很久的难点。因为这个函数是在主线程中调用了异步函数时就会发生，比如进行了一次<code class="language-plaintext highlighter-rouge">IHttpResponse::WriteEntityChunks</code>操作，如果是你在主线程的必然性事件中调用了自定义的异步函数，就需要在该必然性事件中返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>，否则程序不会按照你的想法来执行。</p>
+
+<h2 id="异步函数">异步函数</h2>
+
+<p>讲到这里就讲到我这篇文章最关键的地方了，也就是多线程开发带来的难点。本质上讲IIS的请求处理管线是靠内部的状态机进行维护的，内部的状态机会不断查看不同状态下的运行情况。如果你在必然性事件中有阻塞，比如你运行了一个无限的while循环，IIS不可能等你运行完，无限循环也不可运行完，再执行其他事情，它会通过其他的监视线程发现后终止掉。所以在你要调用异步函数的必然性事件中，需要返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>，这样状态机就了解了IIS管线运行到该必然性事件是有潜在的异步函数可能导致阻塞的。</p>
+
+<p>比如说我们的WebSocket通信。WebSocket首先肯定是等待输入的，有了输入后读取输入，根据输入执行相关操作，再输出。如果我们打开了WebSocket通信，一直不输入，在IIS的请求处理管线的主线程上，IIS是不可能等我们的。因此我们要开启新的线程来维护WebSocket自身的状态机，肯定是一个While循环的，如下伪代码所示:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>std::condition_variable cv
+std::mutex mt
+std::promise ps
+
+//管线主线程
+deterministic_event(){
+
+    async_state_machine();
+
+    //提示IIS在该必然性事件中会有阻塞
+    return RQ_NOTIFICATIN_PENDING;
+}
+
+//OnAsyncCompletion非必然性事件
+OnAsyncCompletion(){
+    ps.wait()
+
+    //其实这里是新的管线主线程,新的线程下继续管线
+    //在必然性事件中返回了PENDING后，async_state_machine就不在管线了，但是仍在同一个线程
+    return RQ_NOTIFICATION_CONTINUE;
+}
+
+//在原管线主线程的栈上调用的函数，不会切换线程
+async_state_machine(){
+    while(TRUE){
+        std::unique_lock&lt;std::mutex&gt; lk(mt);
+        websocket_read(...,read_async_functor,...);
+        cv.wait(mt,[](){return sm_continue});
+        if(close){
+            break;
+        }
+    }
+    ps.set_value(TRUE);
+}
+
+//该函数是WebSocket模块读取一次后执行的不同线程中的回调函数
+read_async_functor(){
+    if(!read_final){
+        while(!read_final){
+            websocket_read()
+        }
+    }
+    websocket_write();
+    sm_continue=TRUE;
+}
+</code></pre></div></div>
+
+<p>这里<code class="language-plaintext highlighter-rouge">async_state_machine</code>函数里有while函数，如果WebSocket通信一直不输入，将会在<code class="language-plaintext highlighter-rouge">cv.wait</code>一直阻塞。所以如果在必然性事件中比如<code class="language-plaintext highlighter-rouge">OnAuthorizeRequest</code>中调用<code class="language-plaintext highlighter-rouge">async_state_machine</code>则要返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>，此时IIS会开新线程执行函数<code class="language-plaintext highlighter-rouge">OnAsyncCompletion</code>作为新的管线主线程进行管线，注意如果该函数执行完毕，那么IIS就会直接进入管线的下一个必然性事件。因此我们需要用<code class="language-plaintext highlighter-rouge">std::promise</code>来让<code class="language-plaintext highlighter-rouge">OnAsyncCompletion</code>处于阻塞状态，直到<code class="language-plaintext highlighter-rouge">async_state_machine</code>跳出来while循环并设置<code class="language-plaintext highlighter-rouge">ps.set_value(TRUE)</code>,IIS的管线才能到达下一个事件。</p>
+
+<p>5.1更新:似乎在管线必然性事件中只要有异步事件发生，就会产生新的线程执行OnAsyncCompletion函数，而且通过跟踪执行发现。后续的必然性事件都会执行两次，说明从OnAsyncCompletion之后开了新的管线继续执行，原有的管线线程也仍在继续进行。那么原有管线因为是WebSocket通信，HTTP报文其实body里也没有内容，应该是要返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_FINISH</code>才是正解，然后在OnAsyncCompletion中返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>进行阻塞。不阻塞的话，该线程先执行完的话，会把正在进行的WebSocket状态机终止掉。</p>
+
+<h2 id="处理程序配置">处理程序配置</h2>
+<p>处理程序开发完后，加载模块不能直接使用，还需要在处理程序映射中进行设置。具体在IIS的处理程序映射面板中可以找到，需要注意的是如果并不是针对特定文件或者文件夹的，需要勾选掉这个选项，否则可能会和IIS默认的静态文件处理程序冲突。而且还要和其他的处理程序调整前后顺序，很有讲究。</p>
+
+<h1 id="后话">后话</h1>
+<p>为了实现WebSocket通信，我们需要通过三个线程来构成一个WebSocket的状态机，通过<code class="language-plaintext highlighter-rouge">std::condition_variable</code>来进行线程通信，让状态切换下去。感兴趣的小伙伴可以用我自己写的<a href="https://github.com/svandex/RigNet/">Svandex::WebSocket</a>类来测试一下该WebSocket通信实现，在该仓库的<code class="language-plaintext highlighter-rouge">Svandex.h</code>头文件中。</p>
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2019/08/06/few-thoughts-on-history.html">
+			<span>下一篇</span>
+			一些历史思考
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2019/01/03/reading-plan-in-2019.html">
+			<span>上一篇</span>
+			2019年读书计划
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper">
+
+		<h2 class="footer-heading">斯旺达克</h2>
+
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans CJK字体浏览博客
+</p>
+			</div>
+		</div>
+
+	</div>
+
+</footer>
+
+</body>
+
+</html>

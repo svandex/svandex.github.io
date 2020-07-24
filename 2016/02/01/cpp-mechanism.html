@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • 理解C++的机制">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>理解C++的机制</title>
+	<meta name="description" content="C++的学习曲线是漫长的，不仅仅是因为其支持的范式多，知识点较多。还有一个很重要的原因是陷阱比较多，由于机制复杂导致了机制之间会有相互制约。最近半个月又重新浏览了一遍C++ Primer，把自己没有掌握好的一些知识点重新复习了一下，收货颇丰。这篇文章我会一直更新下去，直到我认为我对C++的理解很全面了。技术之外，...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2016/02/01/cpp-mechanism.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2016年02月01日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">理解C++的机制</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>C++的学习曲线是漫长的，不仅仅是因为其支持的范式多，知识点较多。还有一个很重要的原因是陷阱比较多，由于机制复杂导致了机制之间会有相互制约。最近半个月又重新浏览了一遍C++ Primer，把自己没有掌握好的一些知识点重新复习了一下，收货颇丰。这篇文章我会一直更新下去，直到我认为我对C++的理解很全面了。</p>
+
+<p>技术之外，想多谈谈一些其他问题。学习C++的初衷不仅仅是因为兴趣，也是想要自己有一门技术不容易失业。我觉得推动C++发展的一个是九十年代如日中天的微软，这样有影响力的公司的重视，依托于Windows上MFC，COM技术发展，工业界的需求使得C++快速发展；另一个是2000年以后互联网的发展要求高性能的服务器，对C++也有了更多的需求。而学习C++之于我自己，可以更好的面对工作，多一个窗口多一份视野；在工作之中，我也看到了工业界对于计算机处理的大量需求，这也可以让自己与别人相比，更突出一些。</p>
+
+<p>然而要对计算机有更深层次的理解，绝不会是对于具体语言或者语言之上的各种高大上的框架的认识。而是在于计算理论，状态机，CPU架构，操作系统等的认识；我自己也很想在学好C++能写出一些满足工作需求的软件之后，更加注重对于计算本质的理解，这是生而为人对于世界最原始的好奇。世界之复杂，技术之外别有洞天；也要去多看看，多理解技术之外的各种社会现象。(2018/03/30更新)</p>
+
+<h1 id="组成结构">组成结构</h1>
+<p>C++是兼容C语言的，强类型的高性能编译性语言。我觉得编程语言可以由类，函数，表达式，语句和高级特性五个部分组成。高级特性包括比如模板，lambda表达式之类的。</p>
+
+<h1 id="内置数据类型">内置数据类型</h1>
+<p>内置数据类型是整个C++语言的基石，内置的int，short，long，double，float，char，bool其实是对于内存的一种映射过程，是构成其他任何类的最底层抽象。
+<!-- more --></p>
+<h1 id="函数">函数</h1>
+<p>函数最主要的是虚实结合方式（总共有21种方式）。尤其是const限定符，指针和引用参数导致了虚实结合过程的复杂性。</p>
+
+<ul>
+  <li>一个函数通常有两次拷贝过程，一次是虚实结合过程，一次是返回对象过程。如果所有的参数类型和返回类型都是引用，就不存在拷贝过程，这也是我们想要的理想效果。</li>
+  <li>const限定符的本质就是一个对象的数据成员不会被修改，因此const在函数中的引用可以确保函数体内不会对参数进行修改，这是一种加强数据安全的方式。但正是因为数据类型的无法修改，导致了拷贝赋值运算符的失效，导致了const对象是无法进行拷贝构造的。</li>
+  <li>引用的本质是编译器将引用编译成相同的地址，从而减少对象的拷贝，提高内存的使用效率（这也是C++的主要目标之一:D）当虚实结合过程不用引用时，会产生对象拷贝问题，const对象可以拷贝到非const对象，但是非const对象无法拷贝到const对象中（因为const对象的数据成员无法改变）。这也是为什么拷贝构造函数的参数一定是引用的原因，另一个问题是如果函数的形式参数是const类型时，由于一个对象无法拷贝到一个const对象，因此此时的虚实结合过程是以非拷贝构造形式结合的。</li>
+  <li>另一个难点是函数对象的引入，产生函数对象的方式主要有lambda表达式，bind。函数对象类的本质是一个无名的只有一个函数成员的类。函数对象问题其实是涉及泛型算法的，有部分定义在functional头文件。</li>
+  <li>函数重载涉及到了参数列表问题，更进一步可以引申到函数模板的问题。</li>
+</ul>
+
+<h1 id="类">类</h1>
+<p>类最为主要的是六大函数（构造函数，拷贝构造函数，移动构造函数，析构函数，拷贝赋值运算符，移动赋值运算符），虚函数，成员访问控制和继承方式。由于复杂的继承机制和类的六大函数，产生了一些特殊的技巧。</p>
+
+<ul>
+  <li>成员函数的特殊参数this指针</li>
+  <li>理解合成构造函数和析构函数默认情况下会进行怎样的行为</li>
+  <li>派生过程中子对象的默认生成过程如何，如何进行控制</li>
+  <li>指针和引用的多态导致编译器将要做什么额外的工作</li>
+  <li>一些特殊的类，比如虚基类，友元类，内嵌类，Union类，局部类，聚合类，字面值常量类，函数对象类等</li>
+  <li>RAII机制和智能指针（shared_ptr，unique_ptr，weaked_ptr，auto_ptr）</li>
+  <li>六大函数的default和delete控制</li>
+</ul>
+
+<h1 id="表达式">表达式</h1>
+<p>表达式主要涉及到的是运算符重载问题和左值右值问题。合理的使用运算符重载可以提高我们使用类的效率。而右值的引入进一步地提升了内存管理的效率，减少了对象的拷贝。</p>
+
+<h1 id="语句">语句</h1>
+<p>语句没有什么太多好说的，任何一个编程语言都会有for，while，break，continue，switch，毕竟命令式程序设计就是基于顺序，循环和选择三大语句职称。C++还提供了异常机制，给出了try-catch语句。</p>
+
+<h1 id="高级特性">高级特性</h1>
+<h2 id="基础知识">基础知识</h2>
+<p>在高级特性上，C++主要提供了模板这一大杀器。模板的主要知识点包括：</p>
+
+<ul>
+  <li>函数模板和类模板</li>
+  <li>类型推导和引用折叠</li>
+</ul>
+
+<h2 id="多线程">多线程</h2>
+<p>在C++11中首次加入了多线程库，这是个很重要的特性。随着CPU的主频很难再增加，增加核心数变成了主流的提升性能的方式。那么并行计算和多线程计算将会是C++开发人员必备的能力。这里主要推荐的是Concurrency In Action这本书，中文版翻译的比较烂，强烈推荐看英文原版。讲的非常的细致，而且如果只是使用而不想要知道具体细节是可以只看前几章节的。除此之外还推荐陈硕的《C++多线程服务器开发》，我还没有看，打算以后补上。</p>
+
+<h2 id="模板元编程">模板元编程</h2>
+<p><a href="https://www.cnblogs.com/qicosmos/p/4480460.html">模板元编程</a>知识点包括：</p>
+
+<ul>
+  <li>参数包作为变量，枚举和静态成员作为常量</li>
+  <li>函数模板通过模板展开和特例化实现迭代类型计算</li>
+  <li>类模板通过继承和特例化实现迭代类型计算</li>
+</ul>
+
+<h2 id="stl">STL</h2>
+<p>STL主要包括I/O库，顺序容器，关联容器，迭代器和泛型算法五个部分。迭代器又分为输入迭代器，输出迭代器，反向迭代器，双向迭代器和随机迭代器；泛型算法就是建立在使用迭代器和函数对象的基础上的一种算法的封装。STL的另一大难点是掌握顺序容器和关联容器的操作，有些容器存在一些特殊的操作。掌握STL的实现才能够更加灵活的使用STL，很多公司禁止使用STL是因为很难招到完全掌握STL的工程人员，为了工程效率和稳定所以不用STL。</p>
+
+<h2 id="其他">其他</h2>
+<p>在高级特性上，还比较特有的是命名空间（namespace），尤其是在混合使用不同的库比如boost时候，可以通过std::和boost::方式使用不同库中的同名函数。还有异常处理，C++提供了较为丰富的异常处理机制，在STL中有很多异常处理类，保证了C++程序的健壮性。</p>
+
+<h1 id="内存管理">内存管理</h1>
+<p>为什么要把内存管理单独拿出来呢？因为我觉得C++最大的优点，也是最大的难点和最奇淫技巧的地方就在于算是半自动的内存管理机制。很多语言比如JAVA之流都是通过了一层中间层来进行内存管理，这种管理方式由于标准化会导致效率降低。就好比你自己家的房子，如果你请了个清洁工来打扫，她会每一个房间每个位置都打扫一遍，但是对于自己来说，你知道哪里肯定没有垃圾，你就不需要花费精力去解决那里的垃圾了，这样效率就提升了。</p>
+
+<p>内存管理主要涉及到C++对象模型和两大问题。第一个是对象拷贝问题；第二个是对象的析构问题。拷贝容易造成内存浪费，析构容易造成内存泄漏。</p>
+
+<ul>
+  <li>C++对象模型主要由非静态数据成员、虚表指针以及页管理的内存对称共三部分组成。在这个对象模型基础上，理解继承、多重继承和虚拟继承下的对象模型，以及基类指针、派生类指针的解引用，才能去理解多态的特性。基本上这些内容在Stanley Lippman的<a href="http://www.amazon.com/Inside-Object-Model-Stanley-Lippman/dp/0201834545/">Inside C++ Object Model</a>这本书中都有介绍。</li>
+  <li>为了解决对象拷贝问题，主要提出的技术手段包括指针，const，左值引用和右值引用。在C++11中新引入的右值概念是对于拷贝问题的很好技术手段，比如constexpr和lambda表达式都是利用了右值的概念提高内存使用效率。要理解右值，就要理解函数传参问题。在传递参数时，非常左值引用只可以绑定左值，常左引用可以绑定左值和右值。那么非常左值引用，如何绑定右值呢？只能通过右值引用绑定右值，引用折叠从此引出。可以看Bjarne Stroustrup的<a href="http://www.stroustrup.com/C++11FAQ.html#rval">解释</a>。</li>
+  <li>为了解决内存泄漏问题，主要提出的是RAII机制，动态内存中的对象的初始化过程即是资源分配过程(Resource Allocation Is Initialization)，将空间分配和对象初始化绑定在了一起。而当我们需要单独的空间分配过程时，则可以单独使用Allocator类来进行，而不是使用非常危险的new操作。使用new操作符的动态内存分配意味着对象的析构是手动的，既然是程序员自己进行，就很有可能会忘记析构或者在程序员析构之前，对象就已经被析构掉了。因此RAII和智能指针能够很好解决这个问题，而重载new-delete以及allocator类可以有效地提升RAII机制。</li>
+</ul>
+
+<p>既然有了拷贝问题和析构问题，我们就应该知道这两大问题在什么情况下产生。拷贝问题经常发生在函数的虚实结合过程中和赋值表达式，其实虚实结合过程就是赋值运算过程。所以一个类的拷贝构造函数和拷贝赋值运算符对于内存效率有很大影响，除此之外移动函数和移动赋值运算符也能够显著提升效率，移动的本质其实就是构造右值。析构的问题主要还是存在于指针的使用和动态内存分配的情况下。你看，类的六大函数无一不还是为了更好的内存使用效率而设计的。</p>
+
+<p>除此之外的语法糖auto和decltype提升的是代码编写的便捷。</p>
+
+<h1 id="相关网站和书籍">相关网站和书籍</h1>
+<h2 id="基础知识-1">基础知识</h2>
+<p>首要推荐的当然是<a href="http://isocpp.org/">C++标准委员会</a>的网站，然后是著名的<a href="http://www.cppreference.com/">C++查询网站</a>。</p>
+
+<p>推荐的书籍首推<a href="http://www.amazon.com/Primer-5th-Stanley-B-Lippman/dp/0321714113/">C++ Primer</a>，基本上大牛都会推荐这本书，我也是看这本书的。还有一个是C++创始人Bjarne Stroustrup自己写的<a href="http://www.amazon.com/Effective-Specific-Improve-Programs-Designs/dp/0321334876/">The C++ Programming Language</a>，这本书更适合有一定编程基础的人再看，写得比较专业一点。</p>
+
+<p>最近发现了<a href="https://purecpp.org">purecpp</a>这个网站，是c++爱好者自己建立的旨在团结中国的所有c++爱好者和开发者的网站，并且举办了2018年的<a href="http://purecpp.org/detail?id=2050">c++大会</a>,感兴趣的可以关注这个网站并注册会员，可以在论坛互动。</p>
+
+<h2 id="层次提升">层次提升</h2>
+<p>其次推荐的就是Effective C++，More Effective C++，Exceptional C++，More Exceptional C++，这四本书是在对C++所有语法掌握情况下，对使用过程中的一些容易发生的陷阱进行讲解，同时还站在一种更高层次的角度去看各种语法之间的关系，提升对C++使用的理解。不过也由于年代久远，而且还是在C++11标准之前出的书，很多东西需要辩证的看吧。</p>
+
+<p>如果觉得上面的这几本书太老了，可以看Modern Effective C++。这本书是在2014年出版的，由C++标准委员会主席Herb Sutter写推荐语的，由业界大牛Scott Mayer编写的，详细介绍了C++11和C++14带来的全新特性。这个作者也是刚才提到的Effecitive系列丛书的作者，Brown University毕业的博士，著名的C++顾问和培训者。</p>
+
+<p>再推荐一本老书了，虽然这本老书已经过去至少15年了，但是对于C+对象在内存分布的情况做了很深度的解释，可以提升C++运用过程中对内存使用效率的理解，这本书就是<a href="http://www.amazon.com/Inside-Object-Model-Stanley-Lippman/dp/0201834545/">Inside C++ Object Model</a>。不过这本书是1996年编写的，而第一个C++标准是1998年的C++98，且该书是基于cfront编译器做的分析，所以里面有很多陈旧的知识，而且C++11标准中的lambda表达式、右值和移动构造函数等概念这本书中也没有涵盖，所以要有一定编程经验基础再看这本书会比较好的。这本书主要学习的还是其中的分析方法，通过指向成员的指针来了解你所使用的编译器是如何将对象在内存进行分布的，如何理解多态的机制，派生的机制。</p>
+
+<p>同时在2014年Bjarne Stroustrup自己又写了一本新书，这本书是在C++14标准发布后发布的，旨在希望大家能够摒除C++98当年的各种诟病，能够重新从C++14开始学习起新的C++，这本书的名字是<a href="http://www.amazon.com/Programming-Principles-Practice-Using-2nd/dp/0321992784">Programming: Principles and Practices using C++</a>。不过很多人认为这本书与其说是在介绍C++，倒不如说是介绍编程的通用知识，用C++的例子作为讲解。看这本书可以让你对于程序设计有个更深的理解，不仅限于C++。</p>
+
+<p>最后推荐的是我强烈推荐的，那就是在2015年的时候Bjarne Stroustrup和Herb Sutter两位C++权威人物合力编写的<a href="https://github.com/isocpp/CppCoreGuidelines">C++ GuideLines</a>，这个C++编程指南其实就是我上面介绍的四本书的精髓的集中，而且还是在最新的C++14标准基础上而编写的C++编程指南，规范了C++的代码编写方式，从而以合理的编码习惯来有效的避免了对象拷贝，对象错误析构等各种低效率内存使用或者错误使用的问题，这个指南我觉得是C++学习者必看。</p>
+
+<p>推荐C++委员会在GitHub上公开的<a href="https://github.com/cplusplus/draft">C++标准草案</a>，一直都在更新。(2018/03/22更新)</p>
+
+<h1 id="业界进展">业界进展</h1>
+<p>目前我所知道的是，软件开发在往多线程编程和异步编程方向发展。这两个方向产生的原因本质上，都是互联网的发展要求服务器有多线程编程支持更多用户，以及异步编程解决IO阻塞的问题，当然多线程编程和异步编程还可以解决UI的响应问题。目前C++11标准已经有了多线程库和异步编程库，学习者可以多多关注一下。</p>
+
+<p>还有微软起步也比较早，在C++11还没有成型时候就已经有了自己的Concurrency Runtime和Parallelism Pattern Library用于多线程编程和异步编程，可以在微软的<a href="https://docs.microsoft.com">帮助文档</a>上找到更多资料。</p>
+
+<h1 id="业界大牛">业界大牛</h1>
+<p>关于C++方面的大牛，我推荐这么几个人，可以Google到他们的个人博客，有很多值得学习的博文</p>
+
+<ul>
+  <li>Bjarne Stroustrup，C++创始人，就这一条就牛的不行了，TAMU终身教授，Columbia University客座教授，Morgan Stanley高级顾问。</li>
+  <li>Herb Sutter，十年C++ ISO标准委员会成员，微软C++/CLI架构师，Exceptional系列的三本书就是他的代表作。他的<a href="https://herbsutter.com">个人网站</a>有非常多好文章，很值得一读，毕竟是标准委员会成员。cppcon他也经常做主持，有很多cppcon的视频可以在channel9或者youtube上找到。</li>
+  <li>Scott Meyer，Brown University的博士，Effective系列丛书作者，C++顾问和培训师。</li>
+  <li>Stanley Lippman，C++ Primer的作者，C++初期和BS同时开发C++的早期版本，算是C++的早期创始人之一，后来2007年受雇于微软作为架构师开发Visual C++。</li>
+  <li>vczh，陈梓莘，华南理工大学毕业的大牛，从初中开始编程，本科毕业入职MSRA，然后转入西雅图总部至今，知乎上人人皆知的轮子哥。«C++ Primer»中文版审校，可以看出水平很高，而且在华人C++圈有影响力。</li>
+  <li>Kenny Kerr，微软MVP，他创造了C++/WinRT，将标准C++再次带入到了微软的开发环境中。微软曾经也是C++的主力坚持者，后来2000年左右推出.NET以后C++就退居二线了。(2018/03/22更新)</li>
+  <li>skywind3000，韦易笑，知乎大V，感觉写的东西都很有深度，他有自己的<a href="http://skywind.me">博客网站</a>。</li>
+  <li>cloudwu，云风，目前入职阿里游戏，游戏引擎大神，这是他的<a href="https://blog.codingnow.com">博客网站</a>。</li>
+</ul>
+
+<h1 id="个人开发习惯">个人开发习惯</h1>
+<p>我自己觉得在不同平台上开发GUI程序还不如开发网络程序，采用<a href="https://github.com/zaphoyd/websocketpp">websocketpp</a>库构建服务程序来和前端进行交互，json对象的后端构造可以采用<a href="https://github.com/tencent/rapidjson">rapidjson</a>，前端的话javascript是原生支持的。HTTP协议可以用websocketpp库实现，也可以通过nginx等服务程序提供支持。</p>
+
+<p>不过对于数据吞吐量比较小的程序是可以的，毕竟前端和后端通过以太网交换数据还是比内存里交换数据慢很多的。常见的以太网最多也就是千兆网口，如果这个数据吞吐量满足的话，也没有什么其他问题了。有个小技巧是可以用<code class="language-plaintext highlighter-rouge">tail -f &lt;/path/to/log/file&gt;</code>查看websocketpp实时生成的日志文件很方便。</p>
+
+<h1 id="总结">总结</h1>
+<p>C++兼容了C，所以提供了底层次的内存管理，同时又有自己的更抽象的高级内存管理方式。所以C++可以有更强的性能，但是多少失去了项目构建的便捷性。</p>
+
+<p>我现在对于C++的理解就是一切以类为最基本元素，通过类来进行更有效更好的内存管理，通过类可以对数据和函数进行封装进行更好的代码管理便于重构。尽量地减少零散的未封装函数存在，更多地对算法进行泛型化，也就是对于算法的封装。总之就是提高封装性，提高语句的简约性，以及使用任何已有的技术做好内存管理。</p>
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2016/07/22/library-collection.html">
+			<span>下一篇</span>
+			开发工具整理
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2015/12/16/ten-games-in-seventh-generation.html">
+			<span>上一篇</span>
+			第七世代十大游戏
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper">
+
+		<h2 class="footer-heading">斯旺达克</h2>
+
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans CJK字体浏览博客
+</p>
+			</div>
+		</div>
+
+	</div>
+
+</footer>
+
+</body>
+
+</html>
