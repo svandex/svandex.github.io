@@ -6,22 +6,23 @@ src: url(/assets/fonts/libretto-icons/libretto-icons.woff) format("woff"), url(/
 body, h1, h2, h3, h4, h5, h6, p, blockquote, pre, hr, dl, dd, ol, ul, figure { margin: 0; padding: 0; }
 
 /** Basic styling */
-body { font: 400 18px/2 "Noto Sans SC", "Cascadia Code", Consolas, Courier; color: #363431; background-color: #f2f1ed; -webkit-text-size-adjust: 100%; -webkit-font-feature-settings: "kern" 1; -moz-font-feature-settings: "kern" 1; -o-font-feature-settings: "kern" 1; font-feature-settings: "kern" 1; font-kerning: normal; }
+body { font: 400 16px/2 "Noto Sans SC", "Hiragino Sans GB W3", "Playfair Display", "Cascadia Mono", "Monaco", Consolas; color: #363431; background-color: #f2f1ed; -webkit-text-size-adjust: 100%; -webkit-font-feature-settings: "kern" 1; -moz-font-feature-settings: "kern" 1; -o-font-feature-settings: "kern" 1; font-feature-settings: "kern" 1; font-kerning: normal; }
 
 /** Set `margin-bottom` to maintain vertical rhythm */
 h1, h2, h3, h4, h5, h6, p, blockquote, pre, ul, ol, dl, figure, .highlight { margin-bottom: 15px; }
 
 /** Articles */
 article { background: #faf9f5; box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05); margin-bottom: 30px; padding: 3em 3em 1em; }
-@media screen and (max-width: 600px) { article { padding: 1em 1em 0.3em; } }
-@media screen and (max-width: 600px) { article > .entry-content { font-size: 90%; } }
-article > .entry-content:first-letter { color: #cd5c5c; display: inline-block; float: left; font-family: "Playfair Display"; font-size: 49px; font-style: normal; font-weight: 700; line-height: 70px; margin: 6px 10px 0 -5px; }
-@media screen and (max-width: 600px) { article > .entry-content:first-letter { font-size: 49px; line-height: 30px; } }
-article > .entry-content:first-line { color: #000000; font-family: "Noto Sans SC"; font-size: 1em; font-style: normal !important; font-weight: normal; letter-spacing: 2px; }
+@media screen and (max-width: 600px) { article { padding: 1em 1em 0.3em; font-size: 20px; } }
+@media screen and (max-width: 600px) { article > .entry-content { font-size: 80%; } }
+article > .entry-content:first-letter { color: #cd5c5c; display: inline-block; float: left; font-family: "Noto Sans SC"; font-size: 49px; font-style: normal; font-weight: 700; line-height: 70px; margin: 6px 10px 0 -5px; }
+@media screen and (max-width: 600px) { article > .entry-content:first-letter { font-size: 36px; line-height: 40px; } }
+article > .entry-content:first-line { /* color: #000000; font-family: "Noto Sans SC"; font-size: 1em; font-style: normal !important; font-weight: normal; letter-spacing: 2px;
+*/ }
 
 .post-header { border-bottom: 1px solid #d9d6d0; margin-bottom: 2rem; text-align: center; }
 .post-header:before { background: #faf9f5; border: 1px solid #d9d6d0; border-radius: 50%; box-shadow: 0 0 0 4px #faf9f5; color: #a09a92; content: "p"; display: inline-block; font-family: libretto-icons; font-size: 21px; line-height: 21px; margin: 1rem auto 2rem; padding: 10px; text-shadow: none; }
-.post-header > div { color: #a09a92; font-size: 18px; font-style: italic; }
+.post-header > div { color: #a09a92; font-size: 16px; font-style: italic; }
 @media screen and (max-width: 600px) { .post-header > div { font-size: 18px; } }
 .post-header > div:before { color: #d9d6d0; content: "~"; display: inline-block; font-family: libretto-icons; font-size: 24px; margin: 0 0.25rem; text-shadow: none; vertical-align: -6px; }
 .post-header > div:after { color: #d9d6d0; content: "`"; display: inline-block; font-family: libretto-icons; font-size: 24px; margin: 0 0.25rem; text-shadow: none; vertical-align: -6px; }
@@ -76,7 +77,7 @@ pre > code { border: 0; padding-right: 0; padding-left: 0; }
 /** Site header */
 .site-header { background: #faf9f5; border-top: 0px solid #cd5c5c; border-bottom: 1px solid #e7e6e4; min-height: 56px; text-align: center; position: relative; }
 
-.site-title { font-family: "Noto Sans SC"; font-size: 25px; font-weight: bold; line-height: 56px; margin-bottom: 0; }
+.site-title { font-family: "Noto Sans SC","Hiragino Sans GB W3"; font-size: 25px; font-weight: bold; line-height: 56px; margin-bottom: 0; }
 .site-title, .site-title:visited { color: #cd5c5c; }
 
 /** Site footer */
@@ -109,7 +110,7 @@ pre > code { border: 0; padding-right: 0; padding-left: 0; }
 
 .post-meta { color: #787065; }
 
-.post-link { display: block; font-family: "NotosSanssSC"; font-size: 25px; }
+.post-link { display: block; font-family: "Noto Sans SC"; font-size: 25px; }
 @media screen and (max-width: 600px) { .post-link { font-size: 1.1em; } }
 
 /** Posts */
@@ -138,7 +139,7 @@ pre > code { border: 0; padding-right: 0; padding-left: 0; }
 #post-nav a { color: #a09a92; font-style: italic; }
 
 /** Table of Contents */
-.table-of-contents h1 { color: #787065; display: block; font-family: "NotosSanssSC"; font-size: 44px; text-align: center; }
+.table-of-contents h1 { color: #787065; display: block; font-family: "Noto Sans SC"; font-size: 44px; text-align: center; }
 @media screen and (max-width: 800px) { .table-of-contents h1 { font-size: 36px; } }
 .table-of-contents span { color: #a09a92; }
 
