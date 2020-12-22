@@ -31,7 +31,8 @@
 
 <body>
 
-	<header class="site-header">
+	
+		<header class="site-header">
 
 	<div class="wrapper">
 
@@ -41,7 +42,7 @@
 
 </header>
 
-
+	
 	<div class="page-content">
 		<div class="wrapper">
 			<header class="post-header">
@@ -106,6 +107,20 @@
 
 <p>ctags因为年代久远，目前主要使用的都是<a href="https://github.com/universal-ctags/ctags">universal-ctags</a>，编译需要使用automake、autoconf和pkg-config三个工具，而且可以把编译好的二进制文件改名称为比如uctags防止和macos上的默认ctags重名。静态分析方法是比较快的，对于大型源代码的浏览是非常方便的。浏览源代码的话除了要生成tags文件外，还需要一些插件支持比如<a href="https://github.com/ludovicchabant/vim-gutentags">vim-gutentags</a>用于自动生成tags，<a href="https://github.com/Yggdroot/LeaderF">LeaderF</a>用于显示函数列表。</p>
 
+<p>简单介绍一下Universal-Ctags，不仅能够处理定义，还能处理引用。主要概念分为fields、kinds、extras和roles。</p>
+
+<ul>
+  <li>fields包括语言对象的名称，所在文件位置，文件中查找的模式，文件中的行号。fields也可以说是tags文件中对应的格式。</li>
+  <li>kinds指的是fields中的语言对象，你想选择那些，比如变量、函数是否要记录下来，可以选择的。</li>
+  <li>extras是额外选项，应该算是kinds的补充，因为kinds只会包含文件中存在的字段，但是extras可以包含比如匿名函数对应的名字，这种名字并不是在源文件中真的存在的。</li>
+  <li>roles是Universal-Ctags才有的概念，主要是针对于引用概念，比如被include的文件名称会被标记为roles是头文件。</li>
+</ul>
+
+<p>分享我为UE4生成ctags用的命令，切记要用用–format=1来保证生成的tags的格式是vim能够识别的原生格式。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ctags -R --format=1 --kinds-c++=+dfghmstuvcnZ --fields-c++=+{specialization}{template}{properties}{captures} --languages=c++ -f UE4 &lt;UE4_DIR&gt;
+</code></pre></div></div>
+
 <h2 id="vim-plugin">vim-plugin</h2>
 <p><a href="https://github.com/junegunn/vim-plugin">vim-plugin</a>支持并发操作，比vundle快很多，配置也比较简单，推荐使用这个进行管理vim插件。</p>
 
@@ -129,6 +144,10 @@ add_executable(targetname sourcefilelist)
 </code></pre></div></div>
 
 <p>作为构建工具，CMake的目的是描述源文件之间的关系，以及目标是什么。这里就不得不提到库的概念了，CMake提供了对库的支持。在add_executable语句之前，加入link_directories可以添加动态库，加入include_directories可以添加静态库，添加target_link_librares可以逐个动态库文件加入到链接过程中。除此之外就是对一些CMake变量的记忆，能够帮助更快地将源文件之间的依赖关系描述清楚。还有Find语句的使用，提高了CMake模块的利用率，这里不再蛰述。推荐创建CMake的Kitware公司写的一本书<a href="https://www.amazon.com/Mastering-CMake-Ken-Martin/dp/1930934319">《Mastering CMake》</a>。</p>
+
+<h1 id="源码查看工具">源码查看工具</h1>
+
+<p>以前都是听别人说SourceInsight，后来自己搜了一下发现这个工具好像停止更新了。无意之中发现一个也很不错的工具，叫做<a href="https://wwww.sourcetrail.com">SourceTrail</a>，不仅可以实现定义跳转，而且还会帮你把类图画出来，这是非常棒的。因为很多时候，我们其实想要知道的就是类之间的关系，看单个类其实意义不大。这个工具有VS的插件，也有vim插件。一般在Windows平台上没有cmake工具的话，很难生成compile_commands.json文件，这个vs的插件可以帮你生成！实在是太方便了！不过我自己尝试过发现，似乎启动Visual Studio的时候要用管理员权限，否则这个插件会卡住。</p>
 
 <h1 id="shell脚本">Shell脚本</h1>
 <p>在Windows上就是cmd和powershell，在UNIX上就是bash了，当然也有其他变种，最流行的就是bash了。Shell脚本的具体语法，我也不具体多说了，主要分享一些自己的经验。</p>

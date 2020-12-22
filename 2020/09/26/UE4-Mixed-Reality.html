@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • UE4/Hololens2源码剖析">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>UE4/Hololens2源码剖析</title>
+	<meta name="description" content="我看的源码版本是4.25，后续版本中的内容和本文是否一致是不能保证的。所以本文主要介绍看源码的方法或者说顺序，读者要能够自行跟着文章阅读源码，才能够真正理解。看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKey...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2020/09/26/UE4-Mixed-Reality.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	
+		<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+	
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2020年09月26日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">UE4/Hololens2源码剖析</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>我看的源码版本是4.25，后续版本中的内容和本文是否一致是不能保证的。所以本文主要介绍看源码的方法或者说顺序，读者要能够自行跟着文章阅读源码，才能够真正理解。</p>
+
+<p>看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKeypoint，其实在最新的4.25版本的引擎中已经改为HMDHandJoint了。所以看源码才能真正获得正确的类型名称或者函数名称。</p>
+
+<p>12月8日更新：微软又出了OpenXR支持<a href="https://github.com/microsoft/Microsoft-OpenXR-Unreal">插件</a>，而且虚幻官方说UE5将仅支持OpenXR的开发，所以我这篇文章再更新一波关于OpenXR的插件的源码剖析。微软新推出的插件只支持4.26版本以上，正好是随着4.26版本推出插件的，所以这个插件非常的新，12月4日才在GitHub上发布的。</p>
+
+<h1 id="抽象层级">抽象层级</h1>
+
+<p>UARPin是UE自带的对所有的AR设备支持的名称，而微软WMR中的名称为UWMRARPin，且UWMRARPin是在UARPin的基础上实现的，源码如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UWMRARPin: public UARPin
+{
+...
+private:
+	FString AnchorId;
+	bool IsInArchorStore = false;
+};
+</code></pre></div></div>
+
+<p>所以我们可以看到，不同的模块实现了封装：</p>
+
+<ul>
+  <li>UE自带的对AR支持的模块是AugmentedReality，其类名称以UAR开头</li>
+  <li>微软插件的模块是HoloLensAR和WindowsMixedReality(WMR),其类名称以UWMR开头</li>
+  <li>微软推出UxT工具，实现了交互式Actor等工具，其类名称以UUxt开头</li>
+</ul>
+
+<p>真正做开发时候，大多数只要用UxT工具就行了。但是站在太高的抽象层，有时候代码的效率反而可能会比较低，因为封装次数太多很多类型的成员用不上但是仍然要加载进内存或者占用CPU进行计算，颇有杀鸡用牛刀的感觉。所以应该将所有的抽象层次的源码都看一遍才是最好的。</p>
+
+<p>除此之外，UxT也是不支持空间重建(Spatial Mapping)，毕竟只是个UX工具包，需要WMR中利用UMRMesh才能够实现一些功能。</p>
+
+<p>所以接下来我们通过从低级别抽象层到高级别抽象层，来将所有的源码都剖析一遍。记住剖析过程才是最重要的，而不是记住类名称，因为库可能被重构，类名称也可能会被修改，所以掌握AR模块的启停和运行规律才是最稳妥的。</p>
+
+<h1 id="模块加载">模块加载</h1>
+
+<p>很多的模块加载都是通过</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FModuleManager::LoadModuleChecked&lt;ModuleType&gt;(&lt;ModuleName&gt;)
+</code></pre></div></div>
+
+<p>来获得的。且很多模块都是继承自</p>
+
+<ul>
+  <li>IModuleFeature</li>
+  <li>IModuleInterface</li>
+</ul>
+
+<h1 id="源码位置">源码位置</h1>
+
+<p>我最开始看源码的时候，一直以为所有的源码都在Engine/Source下面，后来发现并不是这样的。在Engine/Plugins下面除了模块名称的文件夹以外，还需要注意Runtime文件夹,这个文件夹也是容易忽略的。Runtime文件夹里面又分了很多基础模块。</p>
+
+<p>除此之外，非常推荐用Universal-Ctags来看源码，尤其是如果计算机不够强力，你用Visual Studio会发现Intellisense太慢了，而且由于整个虚幻引擎内部的类型非常多，想要用VS中的类管理来查找类，简直慢的不行。Universal-Ctags生成的UE的tag文件都要500MB大小，正则表达式匹配速率大概在一秒，还是可以接受的。总比VS这种动不动十几秒才有响应的工具好用多了,而且VS生成的Intellisense数据库大概有2GB左右，相当的大。</p>
+
+<p>我们可以从微软推荐的HoloLens开发需要加载的模块来看，我们要启用HoloLensAR和Windows Mixed Reality两个插件，这两个插件所在的位置分别是</p>
+
+<ul>
+  <li>/Engine/Plugins/Runtime/AR/Microsoft/HoloLensAR</li>
+  <li>/Engine/Plugins/Runtime/WindowsMixedReality</li>
+</ul>
+
+<p>查看这两个插件的Build.cs文件中，可以看到这两个插件的依赖模块名称。其中有两个非常关键的私有依赖模块</p>
+
+<ul>
+  <li>HeadMountedDisplay</li>
+  <li>AugmentedReality</li>
+</ul>
+
+<p>还有一个第三方的私有依赖是WindowsMixedRealityInterop。这个私有依赖库比较简单，主要是有个MixedRealityInterop.h头文件，定义了一些常用的枚举类型，还有一个MixedRealityInterop类，但是这个私有依赖模块是闭源的，只提供了lib模块给你。</p>
+
+<p>而且应该是一个winrt组件，有定义利用到了ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem命名空间，所以这个模块也没有什么太多分析的。这个模块下面有个MixedRealityInterop文件夹，里面全部都是头文件，定义了Hololens不同功能模块对应的头文件，我们从头文件的名称大概就知道每个头文件里面提供了哪些功能。</p>
+
+<p>还提供了虚幻引擎和WMR(Windows Mixed Reality)之间的矩阵、向量转换工具定义在WindowsMixedReality::WMRUtility中，都是静态函数。因此，我们这篇文章主要就是分析五个模块的源码</p>
+
+<ul>
+  <li>HeadMountedDisplay</li>
+  <li>AugmentedReality</li>
+  <li>WindowsMixedReality</li>
+  <li>HoloLensAR</li>
+  <li>UxT</li>
+</ul>
+
+<h1 id="uxt">UxT</h1>
+
+<p>我现在用的版本是0.10，提供了不少按钮组件，但是基础结构和对应的组件什么的还是没变的。</p>
+
+<p>先讲最顶层的抽象，也是日常开发最为便利的工具。这个工具有<a href="https://microsoft.github.io/MixedReality-UXTools-Unreal">官方文档</a>，非常方便的使用。注意这个工具是UX工具，就是用户体验(User Experience)。所以是提供交互功能为主！如果需要一些复杂计算，是需要更深层次的模块来实现的。比如说如何利用空间重建功能识别的物体网格体，将该数据传回给PC进行物体识别。</p>
+
+<p>提供了一些Actor</p>
+
+<ul>
+  <li>AUxtHandInteractionActor</li>
+  <li>AUxtInputSimulationActor</li>
+</ul>
+
+<p>其中AUxtHandInteractionActor是必须添加的，才能够识别手势操作。还有一些按钮相关的Actor，除此之外还有个AUxtTooltipActor可以用于展示ToolTip，挺有用的。</p>
+
+<p>和手势操作相关的组件</p>
+
+<ul>
+  <li>UUxtPointerComponent</li>
+  <li>UUxtNearPointerComponent</li>
+  <li>UUxtFarPointerComponent</li>
+  <li>UUxtFarBeamComponent</li>
+  <li>UUxtFingerCursorComponent</li>
+  <li>UUxtFarCursorComponent/UUxtRingCursorComponent</li>
+</ul>
+
+<p>这些组件都和委托的参数有关。UUxtPressableButtonComponent这个组件是日常交互用到的最常用的，官方有个示例是BP_ButtonHoloLens2。这个组件的委托的函数参数其中有一个是UUxtPointerComponent或其子类的指针，该组件还能派生出</p>
+
+<ul>
+  <li>UUxtFarPointerComponent</li>
+  <li>UUxtNearPointerComponent</li>
+</ul>
+
+<p>比如定义的按钮按下和释放对应的委托</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//Controls/UxtPressableButtonComponent.h
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUxtButtonPressedDelegate,UUxtPressableButtonComponent*,Button,UUxtPointerComponent*,Pointer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUxtButtonReleasedDelegate,UUxtPressableButtonComponent*,Button,UUxtPointerComponent*,Pointer);
+</code></pre></div></div>
+
+<p>查看AUxtHandInteractionActor的构造函数和BeginPlay函数可以发现，上述组件都挂载在USceneCompoent根组件下面。</p>
+
+<p>这里的FarBeam就是手势操作指向远处的物体时那条光束，继承自UE4中的USplineMeshComponent。而FarCursor就是那条光束的终点和物体交叉点上的光环,该类型继承自UUxtRingCursorComponent。显然FingerCursor就是近处物体操作时候手上的光环。</p>
+
+<p>如果想要获得手指关节的朝向FingerTipOrientation和位置FingerTipPosition的话，可以通过如下代码，这里用食指尖IndexTip来做示例，所有的关节名称可以在微软的<a href="https://doc.microsoft.com/en-us/windows/mixed-reality/develop/unreal/unreal-hand-tracking">Unreal文档页面</a>里查看到。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include "HandTracking/IUxtHandTracker.h"
+
+FQuat FingerTipOrientation;
+FVector FingerTipPosition;
+float JointRadius;
+
+IUxtHandTracker* pHandTracker = IUxtHandTracker::GetHandTracker();
+
+bool bIsTracked = pHandTracker-&gt;GetJointStatus(EControllerHand::Left,EUxtHandJoint::IndexTip,FingerTipOrientation,FingerTipPosition,JointRadius);
+</code></pre></div></div>
+
+<p>也可以用<code class="language-plaintext highlighter-rouge">UUxtHandTrackingFunctionLibrary::GetHandJointState</code>静态函数简化操作，你看源码就发现实现方式也是先获得IUxtHandTracker的指针然后调用GetJointStatus。需要注意的是，在模块依赖中需要添加<code class="language-plaintext highlighter-rouge">UXTools</code>模块。</p>
+
+<p>提供组件用于处理BoundsControl，既是可以利用affordance旋转，平移，缩放对应的Actor，affordance就是围在Actor边上的方形体的条状物，和它交互的时候会发亮变色的。有过体验的应该知道我说的是什么。</p>
+
+<ul>
+  <li>UUxtBoundsControlComponent</li>
+</ul>
+
+<p>基于IUxtGrabTarget和IUxtFarTargetU派生了下列组件</p>
+
+<ul>
+  <li>UUxtGrabTargetComponent/FUxtGrabPointerData</li>
+  <li>UUxtManipulatorComponent</li>
+  <li>UUxtPinchSliderComponent</li>
+  <li>UUxtPressableButtonComponent</li>
+  <li>UUxtTouchableVolumeComponent</li>
+</ul>
+
+<p>UUxtGrabTargetComponent实现了对远处目标FarTarget和近处目标GrabTarget的统一，可以获得GrabPointers和委托事件，比如开始抓取和结束抓取等，而且还派生出了UUxtManipulatorComponent来进行几何计算实现对目标的空间移动。</p>
+
+<p>而UUxtPinchSliderComponent主要是和拇指滑块UI有关，类似于桌面系统中的滑块一样的UI。</p>
+
+<p>和Hand Constraint相关，不好翻译Hand Constraint，大概意思就是因为手的结构定义了一些空间范围</p>
+
+<ul>
+  <li>UUxtHandConstraintComponent</li>
+  <li>UUxtPalmUpConstraintComponent</li>
+</ul>
+
+<p>定义了ulnar side和radial side，应该可以翻译成轴向和径向。ulnar的翻译是尺骨方向，感觉很难理解，我认为是沿着手指方向也就是轴向，如果你把手理解成一根圆柱的话。</p>
+
+<p>这里UUxtPalmUpConstraintComponent指提供了唯一函数，用于判定手掌是不是朝上且平坦的，且该函数重载自UUxtHandConstraintComponent父类</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>virtual bool IsHandUsableForConstraint(EControllerHand NewHand) const override
+</code></pre></div></div>
+
+<p>实现方式是利用IndexTip和RingTip的点乘后向量，与手掌法线之间的夹角来计算手掌是不是平坦且指向Z轴方向的。</p>
+
+<p>和物体跟随相关的组件</p>
+
+<ul>
+  <li>UUxtFollowComponent</li>
+</ul>
+
+<p>这个组件很有意思，通过三个条件来判断物体是不是要重新设定自己和人之间的位置。通过Angular Clamp、Distance Clamp和Orientation三者来判断。</p>
+
+<h1 id="headmounteddisplayhmd">HeadMountedDisplay(HMD)</h1>
+
+<p>这是虚幻引擎的内建模块，位置在Engine/Source/Runtime/HeadMountedDisplay文件夹中。入口类型是IHeadMountedDisplayModule，有唯一数据成员是IXRTrackingSystem，除此之外还能通过该类的静态成员获得音视频设备相关的信息。我们再看IXRTrackingSystem.h这个文件里有什么。IXRTrackingSystem里面定义了非常多的纯虚函数，所以该类是抽象基类无法直接构造对象。</p>
+
+<p>这个模块提供了两个个组件</p>
+
+<ul>
+  <li>UMotionControllerComponent，似乎是提供手势识别的组件。</li>
+  <li>UVRNotificationsComponent，所有成员都是HMD相关的委托，实现不同的事件；</li>
+</ul>
+
+<p>感觉这个模块提供的都是接口</p>
+
+<ul>
+  <li>IXRTrackingSystem</li>
+  <li>IXRCamera</li>
+  <li>IXRInput</li>
+  <li>IXRLoadingScreen</li>
+</ul>
+
+<p>除此之外还有静态函数可以获得该模块自身的引用</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>static inline IHeadMountedDisplayModule&amp; Get();
+</code></pre></div></div>
+
+<p>但是获得这个模块指针本身并没有什么用处，因为没有什么有用的成员，而且该函数的实现中选取了等级最高的该模块，说明该模块可以有多个副本，且副本之间有优先级的区别。所以我觉得肯定是有其他模块在HMD模块基础上进行了实现，然后在调用这个函数后强制类型转换到其他模块。</p>
+
+<p>我们看看<code class="language-plaintext highlighter-rouge">HeadMountedDisplayFunctionLibrary.h</code>头文件中都有哪些内容。</p>
+
+<ul>
+  <li>GetTrackingSensorParameters：获取设备传感器参数</li>
+  <li>GetPositionalTrackingCameraParameters：获取摄像头参数</li>
+  <li>EnumerateTrackedDevice</li>
+  <li>GetDevicePose</li>
+  <li>GetDeviceWorldPose</li>
+</ul>
+
+<p>后三个函数是配合使用的，可以知道设备在游戏世界中的坐标和转向等信息。</p>
+
+<p>综上所述，这个模块并没有实际太多用处，主要是定义接口和抽象类，用于实现其他模块用的。然后还能获得一些和设备相关的信息。</p>
+
+<h1 id="augmented-reality">Augmented Reality</h1>
+
+<p>这个引擎内建模块是其他模块的基础，最基本的抽象类是IARSystemSupport，后续的HMD、WMR和HoloLensAR都是在该基础上派生出来的。这个抽象类有几个很有意思的成员函数</p>
+
+<ul>
+  <li>GetARSessionStatus</li>
+  <li>OnStartARSession</li>
+  <li>OnPauseARSession</li>
+  <li>OnEndARsession</li>
+</ul>
+
+<p>根据后三个函数可以知道这个类是对AR系统控制的，比如你需要开启空间映射功能，就需要用这几个函数，空间映射并不是一直都在运行的，后两个函数没有参数，但是OnStartARSession需要参数的类型为UARSessionConfig也就是AR Session的配置，所以我们需要建立UARSessionConfig才能启动AR系统，也很好理解的是UARSessionConfig是派生自UDataAsset。</p>
+
+<p>除此之外，OnGetPointCloud可以获得点云，这为我们感知外部世界做了基础，我们可以发现在HoloLensAR模块中的FHoloLensARSystem中实现了该函数，但是返回的是空的，也就是还没有实现。但是读者最好自己查一下，因为我在写这文章时候没实现不代表读者读的时候是否实现了，我查看的AppleARKit和GoogleARCore都实现了获取点云图功能。在IARSystemSupport中这个函数显然是纯虚函数。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//ARSystem.h
+virtual TArray&lt;FVector&gt; OnGetPointCloud() const =0;
+
+//HoloLensARSystem.cpp
+TArray&lt;FVector&gt; FHoloLensARSystem::OnGetPointCloud()
+{
+	return TArray&lt;FVector&gt;();
+}
+</code></pre></div></div>
+
+<p>AR相关的几个主要类型：</p>
+
+<ul>
+  <li>UARSessionConfig</li>
+  <li>AARSharedWorldGameMode</li>
+  <li>AARSharedWorldGameState</li>
+  <li>AARSharedWorldPlayerController</li>
+  <li>FARSupportInterface</li>
+  <li>UARTrackedGeometry</li>
+</ul>
+
+<p>这里AARSharedWorldGameState是存储数据的，其成员包括</p>
+
+<ul>
+  <li>TArray<uint8> ARWorldData</uint8></li>
+  <li>TArray<uint8> PreviewImageData</uint8></li>
+</ul>
+
+<p>其他成员都是这两个成员的衍生</p>
+
+<ul>
+  <li>int32 ARWorldBytesTotal</li>
+  <li>int32 PreviewImageDataBytesTotal</li>
+  <li>int32 ARWorldBytesDelivered</li>
+  <li>int32 PreviewImageBytesDelivered</li>
+</ul>
+
+<p>我猜测这里的PreviewImageData就是摄像头图像加上全息影像的叠加。AARSharedWorldGameMode中有个重要的Public非静态成员函数就是</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//ARSharedWorldGameMode.h
+AARSharedWorldGameState* AARSharedWorldGameMode::GetARSharedWorldGameState()
+{
+	return CastChecked&lt;AARSharedWorldGameState&gt;(GameState);
+}
+</code></pre></div></div>
+
+<p>这里的GameState定义在World.h中</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//World.h
+class AGameStateBase* GameState;
+</code></pre></div></div>
+
+<p>AARSharedWorldGameMode就是驱动整个游戏的，这和普通的游戏开发中的GameMode是一个意思。里面也有成员Tick，注意到这个Tick函数是私有成员，所以UE4要求开发者不能更改或者继承这个GameMode，只能用默认的Tick。而且我很好奇，私有的Tick函数，那么引擎是如何调用它的呢？是通过反射系统来实现的吗？读者有兴趣的可以研究以下。这个私有函数主要实现的功能是轮询注册的PlayerController，然后把ARWorldData和PreviewImageData不断分发出去。有两个主要成员</p>
+
+<ul>
+  <li>TArray<uint8> SendBuffer</uint8></li>
+  <li>int32 BufferSizePerChunk</li>
+</ul>
+
+<p>而这些数据其实都是存放在GameState中的，GameMode在从GameState中不断获取。还有一个成员是<code class="language-plaintext highlighter-rouge">SetARWorldSharingIsReady</code>，调用后可以支持多个玩家加入同一个服务器实现多人模式。</p>
+
+<p>FARSupportInterface类非常重要，看构造函数如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//ARSupportInterface.cpp
+FARSupportInterface::FARSupportInterface(IARSystemSupport* InARImplementation, IXRTrackingSystem* InXRTrackingSystem)
+	:ARImplementation(InARImplementation)
+	,XRTrackingSystem(InXRTrackingSystem)
+	,AlignmentTransform(FTransform::Identity)
+	,ARSettings(NewObject&lt;UARSessionConfig&gt;())
+{}
+
+void FARSupportInterface::InitialARSystem()
+{
+	...
+	if(ARImplementation)
+	{
+		...
+
+		ARImplementation-&gt;OnARSystemInitialized();
+	}
+}
+
+</code></pre></div></div>
+
+<p>注意到之前提到IARSystemSupport是抽象类，是不可能调用OnARSystemInitialized成员函数的，所以该构造函数肯定是其派生类的引用，比如FHoloLensModuleAR等。且发现构造函数里构建了UARSessionConfig的对象，该类的构造函数是无参数的，通过FARSupportInterface的成员GetSessionConfig和AccessSessionConfig可以获取或者引用配置信息。该类主要就是把IARSystemSupport和IXRTrackingSystem的功能封装了一下，所以是个Support类。而且我没有发现哪里可以获取这个类的对象，看这个类型的代码主要目的是发现UARSessionConfig的对象是由它构造的。</p>
+
+<p>AR应用的SessionConfig可以通过以下方式获得</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include "ARBlueprintLibrary.h"
+
+UARBlueprintLibrary::GetSessionConfig()
+</code></pre></div></div>
+
+<p>且该头文件中还定义了几个有意思的函数</p>
+
+<ul>
+  <li>GetAllTrackedPlanes</li>
+  <li>GetAllTrackedPoints</li>
+  <li>GetAllTracedImages</li>
+</ul>
+
+<p>如果要开启空间映射功能，则需要设置UARSessionConfig对象的如下成员</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bool bGenerateMeshDataFromTrackedGeometry =true;//开启空间映射功能
+bool bRenderMeshDataInWireframe;//映射集合体的三角形绘制出来
+</code></pre></div></div>
+<p>空间映射，或者说环境感知功能主要就要靠两个组件来实现</p>
+
+<ul>
+  <li>UARTrackableNotifyComponent</li>
+  <li>UMRMeshCompoent</li>
+</ul>
+
+<p>还有就是ARTrackable.h头文件，定义了UARTrackedGeometry，这是基础类型。能够识别的物体包括</p>
+
+<ul>
+  <li>UARTrackedPoint</li>
+  <li>UARTrackedImage</li>
+  <li>UARTrackedQRCode</li>
+  <li>UARTrackedObject</li>
+  <li>UARTrackedPose</li>
+  <li>UARPlaneGeometry</li>
+  <li>UARFaceGeometry</li>
+  <li>UAREnvironmentCaptureProbe</li>
+</ul>
+
+<p>这些类型都是UARTrackedGeometry类型的子类，都在ARTrackable.h中定义。要获得这些子类对象，则需要通过UARTrackableNotifyComponent中相应的委托来实现。这个组件的所有公有成员全部都是委托。当获得子类对象后，我们可以通过父类UARTrackedGeometry中的成员来获得另一个组件的指针</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UMRMeshComponent* GetUnderlyingMesh();
+</code></pre></div></div>
+
+<p>这个组件得到的就是空间重建中识别的物体。</p>
+
+<h2 id="增强现实会话">增强现实会话</h2>
+
+<p>当要开始进行空间映射的时候，就需要我上面提到的那几个Session相关的函数，这个是我试了好久试出来的，一直以为空间映射是自动运行程序就会开始的，没想到还是要自己手动加载一下。</p>
+
+<ul>
+  <li>GetARSessionStatus</li>
+  <li>OnStartARSession</li>
+  <li>OnPauseARSession</li>
+  <li>OnEndARsession</li>
+</ul>
+
+<p>除此之外还有一些有意思的操作映射出来网格体的函数，这里就不再蛰述。</p>
+
+<h1 id="windows-mixed-reality模块合集wmr">Windows Mixed Reality模块合集(WMR)</h1>
+
+<p>WMR其实是模块的合集，本身并没有一个模块的名称叫做WindowxMixedReality，这个模块合集要基于微软的第三方闭源模块WindowsMixedRealityInterop，这个闭源模块最重要的类型就是MixedRealityInterop，有唯一静态成员</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//MixedRealityInterop.h
+
+static bool QueryCoordinateSystem(
+  ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem &amp;* pCoordinateSystem,
+  HMDTrackingOrigin &amp; trackingOrigin
+)
+</code></pre></div></div>
+
+<p>和WindowsMixedRealityInterop模块交互的模块是WindowsMixedRealityHMD，从名字中既可以看出是对HMD模块提供的接口的实现。这个模块有三个头文件组成</p>
+
+<ul>
+  <li>IWindowsMixedRealityHMDPlugin.h</li>
+  <li>WindowsMixedRealityFunctionLibrary.h</li>
+  <li>WindowsMixedRealityInteropLoader.h</li>
+</ul>
+
+<p>看到<code class="language-plaintext highlighter-rouge">FunctionLibrary.h</code>结尾的头文件就开心了，一般这种头文件都提供了不错的静态函数，方便使用。</p>
+
+<h2 id="合集内容">合集内容</h2>
+<p>模块合集里很多模块都是没有Public文件夹的</p>
+
+<ul>
+  <li>WindowsMixedRealityEyeTracker</li>
+  <li>WindowsMixedRealityPlatformEditor</li>
+  <li>WindowsMixedRealityRHI</li>
+</ul>
+
+<p>真正可以使用的模块如下</p>
+
+<ul>
+  <li>WindowsMixedRealityHandTracking：手势识别</li>
+  <li>WindowsMixedRealityHMD：对接第三方库WindowsMixedRealityInterop</li>
+  <li>WindowsMixedRealityInputSimulation：模拟手势</li>
+  <li>WindowsMixedRealityRuntimeSettings：远程支持相关</li>
+  <li>WindowsMixedRealitySpatialInput：手势捕捉</li>
+</ul>
+
+<p>类型都是以FWindowsMixedReality开头的</p>
+
+<ul>
+  <li>FWindowsMixedRealityHMD</li>
+  <li>FWindowsMixedRealityHandTracking</li>
+  <li>FWindowsMixedRealityEyeTracker</li>
+</ul>
+
+<p>有个类型是UWindowsMixedRealityRuntimeSettings是用于支持远程连接的，尤其是Holographic Remoting的概念。</p>
+
+<p>获取MixedRealityInterop指针，函数本质上就是<code class="language-plaintext highlighter-rouge">new MixedRealityInterop()</code>得到的，但是做了很多前置条件判定，我在想为什么不做成单例模式呢？</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//WindowsMixedRealityInteropLoader.h
+
+MixedRealityInterop* WindowsMixedReality::LoadInteropLibrary()
+{
+...
+  if(MixedRealityInteropLibraryHandle)//在该文件的84行
+  {
+    HMD= new MixedRealityInterop();
+  }
+...
+  return HMD;
+}
+</code></pre></div></div>
+
+<p>IWindowsMixedRealityHMDPlugin继承自IHeadMountedDisplayModule，所以这是使用WMR的开端。且其派生的类型因为祖上继承自IHeadMountedDisplayModule，有IXRTrackingSystem成员，因此可以理解成WMR 是在HMD基础上开发的。</p>
+
+<p>我感觉这里提供的功能，其实UxT工具里都提供了，除了Holographic Remoting功能。</p>
+
+<p>这里讲到的都是不可被开发者使用的模块部分，主要是</p>
+
+<ul>
+  <li>UWindowsMixedRealityInputSimulationEngineSubsystem继承自UEngineSubsystem用于模拟输入。</li>
+  <li>FWindowsMixedRealityRHIModule，用到了winrt组件实现画面渲染</li>
+  <li>UWindowsMixedRealityRuntimeSettings，这里是对应的Project Setting里面的设置</li>
+</ul>
+
+<p>由于是闭源的，没有办法修改源代码来实现自定义功能。从里面可以看到是基于DirectX和C++/CX来写的。</p>
+
+<h1 id="hololensar">HoloLensAR</h1>
+
+<p>这是插件，所以源码位置在Engine/Plugins/Runtime/AR/Microsoft/HoloLensAR文件夹中。Public文件夹中只有三个文件</p>
+
+<ul>
+  <li>HoloLensARFunctionLibrary.h</li>
+  <li>HoloLensARSystem.h</li>
+  <li>HoloLensModule.h</li>
+</ul>
+
+<p>这个模块只定义了三个类型</p>
+
+<ul>
+  <li>FHoloLensModuleAR</li>
+  <li>FHoloLensARSystem</li>
+  <li>UWMRARPin</li>
+</ul>
+
+<p>模块起始位置是FHoloLensModuleAR，之前已经分析过了。最重要的类型就是FHoloLensARSystem了，派生自IARSystemSupport类型。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//HoloLensARSystem.cpp
+void FHoloLensARSystem::OnStartARSession(UARSessionConfig* InSessionConfig)
+{
+	...
+	UE_LOG(LogHoloLensAR,Log,TEXT("HoloLens AR session started."));
+	...
+}
+</code></pre></div></div>
+
+<p>所以如果你在Output Log窗口中看到<code class="language-plaintext highlighter-rouge">HoloLens AR session started.</code>字符串说明调用了该函数。整个虚幻引擎都是建立在模块化的基础上的，所以AR相关的计算也是由一些模块组成的。基于IModuleInterface实现了FHololensModuleAR类，这是虚幻引擎模块定义的标准做法。而且该类型还有两个额外的成员：</p>
+
+<ul>
+  <li>SetTrackingSystem</li>
+  <li>SetInterop</li>
+</ul>
+
+<p>TrackingSpace是AR设备自身的空间，UE4不能够进行任何修改。AlignedTrackingSpace是通过AlignmentTransform来实现UE4对TrackingSpace的计算，可以理解为空间坐标系的转换。WorldSpace是虚幻引擎的坐标系，通过TrackingToWorldTransform实现对AlignedTrackingSpace的坐标变换。所以可以理解TrackingSystem对应了设备的系统，不仅仅局限于HoloLens也可能是其他设备的系统，而后者其实是设置WindowsMixeRealityInterop也就是WMR的功能。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//HoloLensARSystem.h
+class FHoloLensARSystem:
+	public IARSystemSupport, //抽象类
+	public FGCObject,
+	public TSharedFromThis&lt;FHoloLensARSystem, ESPMode::ThreadSafe&gt;
+{
+	...
+}
+
+//HoloLensModule.h
+class FHololensModuleAR: public IModuleInterface
+{
+	...
+private:
+  static TSharedPtr&lt;FHoloLensARSystem, ESPMode::ThreadSafe&gt; ARSystem;
+}
+
+//HoloLensModule.cpp
+IARSystemSupport* FHoloLensModuleAR::CreateARSystem()
+{
+  ...
+  ARSystem= MakeShareable(new FHoloLensARSystem());
+}
+
+TSharedPtr&lt;FHoloLensARSystem, ESPMode::ThreadSafe&gt; FHoloLensModuleAR::GetHoloLensARSystem()
+{
+  return ARSystem;
+}
+</code></pre></div></div>
+
+<p>可以看到ARSystem是一个静态对象，且是线程安全的。这里以WindowsMixedReality开头的相关模块还有很多，按需加载。要在代码中引用该模块的指针，则需要以下代码来获得一个<code class="language-plaintext highlighter-rouge">TSharedPtr&lt;FHoloLensModuleAR,ESPMode::ThreadSafe&gt;</code>的共享指针，且该指针是线程安全的。上面的IARSystemSupport指针也可以不要，因为IARSystemSupport是个抽象类，有该指针也无法调用任何类型。而且似乎CreateARSystem这个成员函数也用不上，通过UE_LOG打印共享指针，在调用前和调用后测试发现都是同一个指针，因此只要HoloLensModuleAR加载了就会有模块的指针，只需要<code class="language-plaintext highlighter-rouge">GetHoloLensARSystem</code>就行。</p>
+
+<h1 id="开发流程">开发流程</h1>
+
+<p>先讲一些哲学的东西。人、设备、环境这三者之间的关系，是我们开发的根本。本质上来说UxT做的只是解决了人和设备的关系，设备和环境的关系是有的，但是哪些关系需要我们通过这些模块挖掘出来，显示在设备上，然后通过人机交互，达到人和环境的交互。设备是个中间媒介，我们要做的就是</p>
+
+<ul>
+  <li>环境感知WMR/HoloLenAR</li>
+  <li>人机交互Uxt</li>
+</ul>
+
+<p>AR模块搭建了整个交互在UE4上的运行基础，HMD搭建了设备运行在UE4的基础，WMR和HoloLensAR模块是在AR和HMD两个基础模块之上提供了各种关系，我们要利用这些关系实现我们需要的效果。</p>
+
+<p>人直接和环境交互没有问题。当人通过设备和环境交互的时候，就产生了更多的效果，实现了人与环境交互效率的提升。</p>
+
+<h2 id="开发基础">开发基础</h2>
+
+<p>首先要了解整个UE引擎的GamePlay框架，还有一些非常基础的比如AActor类型。</p>
+
+<p>然后是理解UE_LOG宏的使用，通过这个宏可以用于调试作用，比如打印值或者指针什么的。一般是先定义你的LOG，然后再实现和使用。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DECLARE_LOG_CATEGORY_EXTERN(&lt;LogName&gt;,Log,ALL);
+
+DEFINE_LOG_CATEGORY(&lt;LogName&gt;);
+
+</code></pre></div></div>
+
+<p>还有就是理解委托的概念，委托对应的宏的使用，委托才能实现对象之间的事件驱动。</p>
+
+<ul>
+  <li>单播：对应的绑定函数都是以Bind开头，执行都是Execute</li>
+  <li>多播：对应的绑定函数都是以Add开头，执行都是Broadcast</li>
+</ul>
+
+<p>还有就是模块的加载过程，其实游戏本身也是一个模块。</p>
+
+<p>建议将UBT工具的路径添加到环境变量中，既是<code class="language-plaintext highlighter-rouge">Engine\Binaries\DotNET</code>路径。如果编译的模块有问题，此时编辑器是打不开了，因为游戏模块无法加载。此时，需要修改代码再重新编译再打开UE编辑器。编译命令行如下所示</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UnrealBuildTool -ModuleWithSuffix=&lt;ProjectName&gt; &lt;ProjectName&gt;Editor Win64 Development -Project="&lt;path/to/uproject&gt;" "&lt;path/to/uproject&gt;" -IgnoreJunk
+
+</code></pre></div></div>
+
+<p>一些简单的但是有用的函数</p>
+
+<p>利用ToggleVisibility来实现Actor的显示和隐藏，不需要自己去判断。</p>
+
+<ul>
+  <li>GetWorld()-&gt; SpawnActor(…)</li>
+  <li>GetWorld()-&gt; DestroyActor(…)</li>
+</ul>
+
+<p>获取GameMode的方式通常可以</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>AGameModeBase*  UGameplayStatics::GetGameMode(GetWorld())
+</code></pre></div></div>
+
+<p>切记最好不要在任何Actor的构造函数中用上面的方式，我多次出这样的错误了，因为GameMode不一定完全初始化完成了，调用它的一些成员有时候会报错。</p>
+
+<p>可以通过以下的迭代器来找到适合的对象</p>
+
+<ul>
+  <li>TObjectIterator</li>
+  <li>TActorIterator</li>
+</ul>
+
+<p>用UAssetManager来管理资源，通过TSoftObjectPtr来进行按需加载资源</p>
+
+<p>对象构造方法</p>
+
+<ul>
+  <li>MakeShareable，用于普通C++对象</li>
+  <li>NewObject，用于继承自UObject对象</li>
+  <li>SpawnActor，用于继承自AActor对象</li>
+  <li>CreateDefaultSubobject，初始化组件，构造函数中才能用</li>
+</ul>
+
+<p>资源加载，这些本质上都是对LoadObject的封装，且ConstructorHelpers空间中的对象构造函数都会调用<code class="language-plaintext highlighter-rouge">CheckIfIsInConstructor</code>，望文生义就是判断是否在构造函数中调用</p>
+
+<ul>
+  <li>static ConstructorHelpers::FClassFinder</li>
+  <li>static ConstructorHelpers::FObjectFinder</li>
+  <li>LoadClass</li>
+  <li>LoadObject</li>
+</ul>
+
+<h2 id="加载所有的模块">加载所有的模块</h2>
+
+<p>我们梳理一遍以上所有的模块。</p>
+
+<p>引擎内置模块</p>
+
+<ul>
+  <li>AugmentedReality(AR)：定义了AR应用的基础框架，包括GameMode和GameState，最为基础的类型是IARSupportSystem抽象类</li>
+  <li>HeadMountedDisplay(HMD): 定义了XR系统的接口，对设备的抽象，并没有太多实际用处，有个静态Get函数获取优先级最高模块副本</li>
+</ul>
+
+<p>插件模块</p>
+
+<ul>
+  <li>WindowsMixedReality(WMR)：这是一个集合而不是模块的名称，在HMD抽象类的基础上实现，环境感知功能主要实现的模块，但是面向XR的，不仅仅针对HoloLens</li>
+  <li>HoloLensAR：在WMR基础之上针对HoloLens设备做了很多实现优化，最为基础类型是FHoloLensARSystem，但是提供的类型只有三个</li>
+</ul>
+
+<p>第三方模块</p>
+
+<ul>
+  <li>WindowsMixedRealityInterop：这个模块是闭源的第三方插件，支持Holographic Remoting功能，还有支撑WMR</li>
+</ul>
+
+<p>所有的模块都对应有模块指针，在游戏加载的时候自动就会加载上去的。FHoloLensARSystem是UE4会默认加载得到一个指针的，通过FHoloLensModuleAR::GetHoloLensARSystem()可以得到该模块的共享指针指针。</p>
+
+<p>所以开发的第一步是在Build.cs文件中加载所有的模块，以下是四个基础模块的名称，都是需要加上的</p>
+
+<ul>
+  <li>AugmentedReality</li>
+  <li>HeadMountedDisplay</li>
+  <li>WindowsMixedRealityInterop</li>
+  <li>HoloLensAR</li>
+</ul>
+
+<h2 id="对象获取方法">对象获取方法</h2>
+
+<p>开发之前，我们肯定需要找到不同对象的构造方法或者初始化方法。我们能够使用的模块的头文件都是在Public文件夹里。</p>
+
+<p>比较有意思的是，UE模块通常会通过各自模块的名称以<code class="language-plaintext highlighter-rouge">LibraryFunction.h</code>或者<code class="language-plaintext highlighter-rouge">Library.h</code>结尾的头文件提供了一些静态函数，帮助我们获得不同模块加载时自动产生的对象。其实这些头文件定义的都是暴露给蓝图用的函数，能够暴露给蓝图说明也是经常使用的函数。</p>
+
+<p>ARSessionConfig是可以通过在content文件夹中添加DataAsset，然后选择ARSessionConfig子类来实例化一个对象的，可以在编辑器中直接修改其变量，具体可以参考微软的<a href="http://docs.microsoft.com/en-us/mixed-reality/develop/unreal/tutorials/unreal-uxt-ch3#adding-the-session-asset">官方文档</a>。在C++类文件中是添加不了ARSessionConfig的。</p>
+
+<h2 id="开发思路">开发思路</h2>
+
+<p>在UE里面Actor和Component是最重要的两个类型，所以在开发AR应用的时候，首先想想这五个模块里面提供了哪些Actor和Component是可以用的。</p>
+
+<p>然后是充分利用委托来实现不同的Actor/Component之间的交互。</p>
+
+<h1 id="实用技巧">实用技巧</h1>
+
+<p>先选择VSC，然后取消勾选Visual Studio Code插件支持，这样就不会每次自动打开VS什么，就可以放心的用Vim开发了。其实这些编辑器支持都是通过继承ISourceCodeAccess来实现的，有兴趣的读者可以自己研究一下。</p>
+
+<p>在编辑器选项中关闭<code class="language-plaintext highlighter-rouge">Privacy</code>中的两个选项，可以防止libcurl发送不了的报错信息。</p>
+
+<p>在输出日志中有这样的一句</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>LogTaskGraph: Started task graph with 5 named threads and 11 total threads with 3 sets of task threads
+</code></pre></div></div>
+
+<p>自己写的代码编译成了模块，在Binaries文件夹中，有时候有些类重新改了名字，但是Editor中不会刷新，这时候需要删掉编译的二进制模块，重新编译生成才会刷新。</p>
+
+<h1 id="openxr">OpenXR</h1>
+
+<p>如果你查看微软的OpenXR插件中的MicrosoftOpenXR.Build.cs文件可以看到如下插件</p>
+
+<ul>
+  <li>OpenXRHMD</li>
+  <li>OpenXRAR</li>
+  <li>MicrosoftOpenXRRuntimeSettings</li>
+</ul>
+
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2020/12/21/Ten-Games-In-Eighth-Generation.html">
+			<span>下一篇</span>
+			第八世代十大游戏
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2020/08/04/data-structure.html">
+			<span>上一篇</span>
+			数据结构学习
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper" style="text-align: center">
+		<p class="rss-subscribe" style="font-size: 12px;">建议安装Noto Sans SC字体浏览博客
+&nbsp;&nbsp;<a href="/feed.xml">订阅</a><br/>
+		© 2015 - 2020</p>
+
+<!--
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans SC字体浏览博客
+</p>
+			</div>
+		</div>
+-->
+	</div>
+
+</footer>
+
+</body>
+
+</html>

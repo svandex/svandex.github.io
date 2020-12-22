@@ -24,14 +24,15 @@
 	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
 -->
 	<link rel="stylesheet" href="/css/main.css">
-	<link rel="canonical" href="https://svandex.github.io/2019/04/27/start-on-iis-cpp-development.html">
+	<link rel="canonical" href="https://svandex.github.io/2019/04/26/start-on-iis-cpp-development.html">
 	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
 </head>
 
 
 <body>
 
-	<header class="site-header">
+	
+		<header class="site-header">
 
 	<div class="wrapper">
 
@@ -41,12 +42,12 @@
 
 </header>
 
-
+	
 	<div class="page-content">
 		<div class="wrapper">
 			<header class="post-header">
 	<div>
-		<span>发表于 </span><span class="post-meta">2019年04月27日</span>
+		<span>发表于 </span><span class="post-meta">2019年04月26日</span>
 	</div>
 
 	<h1 class="post-title" itemprop="name headline">初探IIS中的C++多线程开发</h1>
@@ -112,7 +113,9 @@ target_link_options(&lt;ModuleName&gt; PRIVATE "/EXPORT:RegisterModule")
 
 <p>IIS的请求处理管线分为请求模块CHttpModule和全局模块的CGlobalModule，其中请求模块有12个必然性事件(Deterministic request event)，就是你注册一定会发生的，这些没有太多讲的。需要讲的是5个非必然性事件，其中重点就是<a href="https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/chttpmodule-onasynccompletion-method">OnAsyncCompletion</a>，这是给我们带来巨大的开发困难的函数，也是困扰了我很久的难点。因为这个函数是在主线程中调用了异步函数时就会发生，比如进行了一次<code class="language-plaintext highlighter-rouge">IHttpResponse::WriteEntityChunks</code>操作，如果是你在主线程的必然性事件中调用了自定义的异步函数，就需要在该必然性事件中返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>，否则程序不会按照你的想法来执行。</p>
 
-<h2 id="异步函数">异步函数</h2>
+<h2 id="工作线程">工作线程</h2>
+
+<p>2020/08/22更新：发现这个一年多前些的文章还是有点问题的。最近又自己研究了一下Nginx的源码，不像IIS是闭源的，开源的Nginx看完后给了我更多对IIS的理解。首先Nginx默认是不会读取请求体内容的，而且工作线程也是不能阻塞的，这和IIS是很像的，Nginx在没有读完请求体或者工作线程有其他问题是要立即返回NGX_DONE，感觉上和这里的RQ_NOTIFICATION_PENDING有异曲同工之妙，都是为了不阻塞工作线程,并且不会关闭本次请求！如果关闭该请求，但是有些处理没有完成，就会产生逻辑错误。在这之前，需要将还没有完成的工作，比如读取完请求头再执行的回调函数注册到事件驱动机制中去，比如Nginx中就是epoll机制，等待Nginx的下一次调用epoll。所有IIS中处理读取请求体的回调函数同样道理，没有读完要立即返回给工作线程一个RQ_NOTIFICATION_PENDING表示本次请求还没完，不要关闭请求，等待下次的IO事件触发回调！</p>
 
 <p>讲到这里就讲到我这篇文章最关键的地方了，也就是多线程开发带来的难点。本质上讲IIS的请求处理管线是靠内部的状态机进行维护的，内部的状态机会不断查看不同状态下的运行情况。如果你在必然性事件中有阻塞，比如你运行了一个无限的while循环，IIS不可能等你运行完，无限循环也不可运行完，再执行其他事情，它会通过其他的监视线程发现后终止掉。所以在你要调用异步函数的必然性事件中，需要返回<code class="language-plaintext highlighter-rouge">RQ_NOTIFICATION_PENDING</code>，这样状态机就了解了IIS管线运行到该必然性事件是有潜在的异步函数可能导致阻塞的。</p>
 
@@ -190,7 +193,7 @@ read_async_functor(){
 
 	<div class="previous">
 		
-		<a href="/2019/01/03/reading-plan-in-2019.html">
+		<a href="/2019/01/02/reading-plan-in-2019.html">
 			<span>上一篇</span>
 			2019年读书计划
 		</a>
