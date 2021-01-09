@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • Windows/STL源码剖析">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>Windows/STL源码剖析</title>
+	<meta name="description" content="«STL源码剖析»这本书读书时候看过一遍，但是时隔三四年实在是有点忘了，加上最近刷LeetCode的时候，发现其实很多都能用上，所以想着再重新梳理一遍。候杰的书太老了，但是老不代表不经典，依然可以指导我们学习。但是因为知道这本书是比较老的书，所以源码剖析就要真的看现代的源码，来让我们对书中可能的错误甄别出来。我是...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2020/07/29/STL-Source-Code-Windows.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	
+		<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+	
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2020年07月29日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">Windows/STL源码剖析</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>«STL源码剖析»这本书读书时候看过一遍，但是时隔三四年实在是有点忘了，加上最近刷LeetCode的时候，发现其实很多都能用上，所以想着再重新梳理一遍。候杰的书太老了，但是老不代表不经典，依然可以指导我们学习。但是因为知道这本书是比较老的书，所以源码剖析就要真的看现代的源码，来让我们对书中可能的错误甄别出来。我是用的STL来自版本为14.28.29333的MSVC编译器，使用vim加上universal-ctags配合查找源代码。</p>
+
+<h1 id="allocator">allocator</h1>
+
+<p>空间分配器主要实现了allocate、deallocate、construct、destroy四个主要函数，两个对未分配内存控制的函数uninitialize_fill和uninitialize_copy，除此之外还有一些类型别名的定义，用于萃取器的。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template &lt;class _Alloc&gt;
+struct allocator_traits : conditional_t&lt;_Is_default_allocator&lt;_Alloc&gt;::value, _Default_allocator_traits&lt;_Alloc&gt;,
+                              _Normal_allocator_traits&lt;_Alloc&gt;&gt; {};
+</code></pre></div></div>
+
+<p>通过allocator_traits可以选择不同的萃取器。</p>
+
+<h1 id="type-traits">Type Traits</h1>
+
+<p>STL中的Type Traits非常有用，比如std::copy中利用std::is_trivially_constructible来区分是否用了默认构造函数，从而实现tag dispatching</p>
+
+<h1 id="iterator">iterator</h1>
+
+<p>迭代器本质上就是包装了指针，实现了递增、递减、解引用、[]等操作，同时还按照规范定义了比如value_type等的类型别名，才能够被iterator_traits使用。很重要的类型别名是iterator_category_tag，实现了tag dispatching才能实现算法的泛型。</p>
+
+<p>迭代器的实现是在容器里的，或者说和容器配套的；但是有个iterator_base基类，</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// ITERATOR STUFF (from &lt;iterator&gt;)
+// ITERATOR TAGS (from &lt;iterator&gt;)
+struct input_iterator_tag {};
+struct output_iterator_tag {};
+struct forward_iterator_tag : input_iterator_tag {};
+struct bidirectional_iterator_tag : forward_iterator_tag {};
+struct random_access_iterator_tag : bidirectional_iterator_tag {};
+</code></pre></div></div>
+
+<p>以上来自微软STL的xutility文件，可以看到tag本质就是类类型；除此之外最重要的两个类型是<code class="language-plaintext highlighter-rouge">std::true_type</code>和<code class="language-plaintext highlighter-rouge">std::false_type</code>，这两个继承自<code class="language-plaintext highlighter-rouge">std::integral_constant</code>类模板。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_STD_BEGIN
+// STRUCT TEMPLATE integral_constant
+template &lt;class _Ty, _Ty _Val&gt;
+struct integral_constant {
+    static constexpr _Ty value = _Val;
+
+    using value_type = _Ty;
+    using type       = integral_constant;
+
+    constexpr operator value_type() const noexcept {
+        return value;
+    }
+
+    _NODISCARD constexpr value_type operator()() const noexcept {
+        return value;
+    }
+};
+</code></pre></div></div>
+
+<h1 id="vector">vector</h1>
+
+<p>增删困难，查改方便，迭代器可以用指针替代</p>
+
+<h1 id="list">list</h1>
+
+<p>增删方便，查改困难，只需要一个迭代器可满足需求，且双向链表的首位相连，意思是最后一个元素的next指针指向了第一个元素。</p>
+
+<h1 id="常见算法">常见算法</h1>
+
+<h2 id="数值算法">数值算法</h2>
+
+<p>有些算法如果更改函数对象，可以有不同的效果。比如accumulate并不一定就是范围内所有元素相加，也可以是相乘或者相减。</p>
+
+<ul>
+  <li>accumulate</li>
+  <li>adjacent_difference</li>
+  <li>partial_sum</li>
+  <li>inner_product</li>
+  <li>min,max,equal,mismatch</li>
+  <li>fill,fill_n</li>
+  <li>swap,iter_swap</li>
+  <li>lexicographical_compare</li>
+  <li>copy,copy_backward</li>
+</ul>
+
+<p>copy函数是非常典型的利用泛化和特化的算法。针对于内置类型，通过std::is_trivially_copyable来对拷贝执行memcopy操作；针对非trivial类型再判断是否指针，还是特定迭代器，利用tag dispatching区分指针再进行更细致的操作。比如vector的迭代器其实就是<code class="language-plaintext highlighter-rouge">T*</code>并不是继承自std::iterator，所以会调用特化的copy版本。</p>
+
+<ul>
+  <li>count,count_if</li>
+  <li>find,find_if,find_end,find_first_of</li>
+  <li>adjacent_find</li>
+  <li>generate,generate_n</li>
+  <li>remove,remove_copy,remove_if,remove_copy_if</li>
+  <li>replace,replace_copy,replace_if,replace_copy_if</li>
+  <li>rotate,rotate_copy</li>
+  <li>reverse,reverse_copy</li>
+  <li>unique,unique_copy</li>
+  <li>search,search_n</li>
+  <li>transform</li>
+  <li>merge,inplace_merge</li>
+  <li>partition</li>
+</ul>
+
+<p>还有一些特定用途的算法</p>
+
+<ul>
+  <li>binary_search,lower_bound,upper_bound,equal_range用于二叉查找</li>
+  <li>next_permutation,prev_permutation用于排列组合</li>
+  <li>random_shuffle随机重排</li>
+  <li>nth_element 保证[first,nth)和[nth,last)两者被nth分割为小于nth的序列和大于nth的序列，但是序列各自都是没有排序的。</li>
+</ul>
+
+<h2 id="set算法">set算法</h2>
+
+<p>都是以set开头命名的</p>
+
+<ul>
+  <li>set_union</li>
+  <li>set_intersection</li>
+  <li>set_difference</li>
+  <li>set_symmetric_difference</li>
+</ul>
+
+<h1 id="函数对象">函数对象</h1>
+
+<p>指针能够实现的功能有限，且不能够很好的和容器和算法进行配合操作。函数对象可以分为三种：</p>
+
+<ul>
+  <li>算术运算</li>
+  <li>关系运算</li>
+  <li>逻辑运算</li>
+</ul>
+
+<p>只支持一元操作和二元操作，更多元就不支持了。和迭代器类似，为了支持萃取器和类型计算，需要标准化定义一些关联类型。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// STRUCT TEMPLATE unary_function
+template &lt;class _Arg, class _Result&gt;
+struct unary_function { // base class for unary functions
+     using argument_type = _Arg;
+     using result_type   = _Result;
+ };
+</code></pre></div></div>
+<p>以上定义来自微软Windwos文件中的xstddef头文件中，定义了一元操作符的关联类型。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// STRUCT TEMPLATE binary_function
+template &lt;class _Arg1, class _Arg2, class _Result&gt;
+struct binary_function { // base class for binary functions
+    using first_argument_type  = _Arg1;
+    using second_argument_type = _Arg2;
+    using result_type          = _Result;
+};
+</code></pre></div></div>
+<p>以上定义来自微软Windwos文件中的xstddef头文件中，定义了二元操作符的关联类型。我们还可以将二元操作符通过配接器转换为一元操作符，通过binder1st来实现，如下代码来自微软functional头文件：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> // CLASS TEMPLATE binder1st
+template &lt;class _Fn&gt;
+class binder1st : public unary_function&lt;typename _Fn::second_argument_type,
+                        typename _Fn::result_type&gt; { // functor adapter _Func(stored, right)
+public:
+    using _Base         = unary_function&lt;typename _Fn::second_argument_type, typename _Fn::result_type&gt;;
+    using argument_type = typename _Base::argument_type;
+    using result_type   = typename _Base::result_type;
+    binder1st(const _Fn&amp; _Func, const typename _Fn::first_argument_type&amp; _Left) : op(_Func), value(_Left) {}
+
+    result_type operator()(const argument_type&amp; _Right) const {
+      return op(value, _Right);
+   }
+
+     result_type operator()(argument_type&amp; _Right) const {
+        return op(value, _Right);
+    }
+
+protected:
+    _Fn op;
+    typename _Fn::first_argument_type value; // the left operand
+};
+</code></pre></div></div>
+
+<h2 id="算术运算函数对象">算术运算函数对象</h2>
+
+<p>除了否定运算为一元运算，其他都是二元运算。</p>
+
+<ul>
+  <li>plus<T></T></li>
+  <li>minus<T></T></li>
+  <li>multiplies<T></T></li>
+  <li>divides<T></T></li>
+  <li>modules<T></T></li>
+  <li>negate<T></T></li>
+</ul>
+
+<h2 id="关系运算函数对象">关系运算函数对象</h2>
+
+<p>全部都是二元运算符。</p>
+
+<ul>
+  <li>equal_to<T></T></li>
+  <li>not_equal_to<T></T></li>
+  <li>greater<T></T></li>
+  <li>greater_equal<T></T></li>
+  <li>less<T></T></li>
+  <li>less_equal<T></T></li>
+</ul>
+
+<h2 id="逻辑运算函数对象">逻辑运算函数对象</h2>
+
+<ul>
+  <li>logical_and<T></T></li>
+  <li>logical_or<T></T></li>
+  <li>logical_not<T></T></li>
+</ul>
+
+<h1 id="适配器">适配器</h1>
+
+<p>分为三种，容器适配器，迭代器适配器，函数对象适配器。</p>
+
+<h2 id="容器适配器">容器适配器</h2>
+
+<p>两者都是deque的适配器。</p>
+
+<ul>
+  <li>queue</li>
+  <li>stack</li>
+</ul>
+
+<h1 id="迭代器适配器">迭代器适配器</h1>
+
+<ul>
+  <li>insert_iterator，back_insert_iterator,front_insert_iterator是output_iterator的适配器</li>
+  <li>reverse_iterator,有唯一的保护成员时_BidIt current{}，模板参数是迭代器_BidIt</li>
+  <li>istream_iterator,ostream_iterator,相比与普通的迭代器，增加了一个istream_type*成员，所以有流的功能。</li>
+  <li>sregex_iterator,sregex_token_iterator，正则表达式匹配时在多个匹配对象之间选择</li>
+</ul>
+
+<p>istream_iterator的构造函数中就会执行<code class="language-plaintext highlighter-rouge">&gt;&gt;</code>读入操作。ostream_iterator和std::copy联合起来用很有意思,ostream_iterator的赋值运算符会调用<code class="language-plaintext highlighter-rouge">&lt;&lt;</code>操作符，其他运算符都是返回当前指向位置，所以和std::copy能够产生效果。</p>
+
+<h1 id="函数对象适配器">函数对象适配器</h1>
+
+<p>函数对象适配器的目的是让各种运算符、成员函数、函数指针都能够标准化。</p>
+
+<ul>
+  <li>运算符都要继承自unary_function和binary_function</li>
+  <li>成员函数都要通过函数模板mem_fun的处理，有趣的是如果是成员函数是虚函数，还能够实现多态；但要求容器元素类型是指针，因为引用元素的容器是不能存在的，无法分配内存</li>
+  <li>函数指针都要通过函数模板ptr_fun的处理</li>
+</ul>
+
+<p>其中Windows的STL的函数模板mem_fun如下所示：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// FUNCTION TEMPLATE mem_fun
+template &lt;class _Result, class _Ty&gt;
+_NODISCARD mem_fun_t&lt;_Result, _Ty&gt; mem_fun(_Result (_Ty::*_Pm)()) {
+    return mem_fun_t&lt;_Result, _Ty&gt;(_Pm);
+}
+
+template &lt;class _Result, class _Ty, class _Arg&gt;
+_NODISCARD mem_fun1_t&lt;_Result, _Ty, _Arg&gt; mem_fun(_Result (_Ty::*_Pm)(_Arg)) {
+   return mem_fun1_t&lt;_Result, _Ty, _Arg&gt;(_Pm);
+}
+
+template &lt;class _Result, class _Ty&gt;
+_NODISCARD const_mem_fun_t&lt;_Result, _Ty&gt; mem_fun(_Result (_Ty::*_Pm)() const) {
+    return const_mem_fun_t&lt;_Result, _Ty&gt;(_Pm);
+}
+
+template &lt;class _Result, class _Ty, class _Arg&gt;
+_NODISCARD const_mem_fun1_t&lt;_Result, _Ty, _Arg&gt; mem_fun(_Result (_Ty::*_Pm)(_Arg) const) {
+    return const_mem_fun1_t&lt;_Result, _Ty, _Arg&gt;(_Pm);
+}
+</code></pre></div></div>
+<p>这里返回的类型如mem_fun_t等其实都是继承自unary_function的类型。而mem_fun1_t是继承自binary_function的类型，因为该成员函数有一个参数_Arg。</p>
+
+<p>其中Windows的STL的宏ptr_fun如下所示：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// FUNCTION TEMPLATE ptr_fun
+#define _PTR_FUN(CALL_OPT, X1, X2, X3)                                                                      \
+    template &lt;class _Arg, class _Result&gt;                                                                    \
+    _NODISCARD pointer_to_unary_function&lt;_Arg, _Result, _Result(CALL_OPT*)(_Arg)&gt; ptr_fun(                  \
+        _Result(CALL_OPT* _Left)(_Arg)) {                                                                   \
+        return pointer_to_unary_function&lt;_Arg, _Result, _Result(CALL_OPT*)(_Arg)&gt;(_Left);                   \
+    }                                                                                                       \
+    template &lt;class _Arg1, class _Arg2, class _Result&gt;                                                      \
+    _NODISCARD pointer_to_binary_function&lt;_Arg1, _Arg2, _Result, _Result(CALL_OPT*)(_Arg1, _Arg2)&gt; ptr_fun( \
+        _Result(CALL_OPT* _Left)(_Arg1, _Arg2)) {                                                           \
+        return pointer_to_binary_function&lt;_Arg1, _Arg2, _Result, _Result(CALL_OPT*)(_Arg1, _Arg2)&gt;(_Left);  \
+     }
+_NON_MEMBER_CALL(_PTR_FUN, X1, X2, X3)
+#undef _PTR_FUN
+</code></pre></div></div>
+
+<p>而对于函数指针，则有两个辅助类型，pointer_to_unary_function和pointer_to_binary_function，这两个类其实都是继承自unary_function和binary_function的。</p>
+
+<h1 id="一些有意思的类型">一些有意思的类型</h1>
+
+<h1 id="基于流的io">基于流的IO</h1>
+
+<p>最基础的ios_base类仅有私有成员，主要处理IO状态，IO异常，格式化，时间，本地化等。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;_Dummy&gt;
+class _Iosb
+{
+public:
+  enum _Fmtflags ...
+  enum _Iostate ...
+  enum _Openmode ...
+  enum _Seekdir ...
+};
+
+class ios_base: public _Iosb&lt;int&gt;
+{
+...
+public:
+  size_t _Stdstr;
+
+protected:
+  // 构造函数是保护成员
+  // 该类不能直接构造，用于派生类
+  _CLR_OR_THIS_CALL ios_base();
+
+  // 在派生类的构造函数中经常用到
+  void _CLR_OR_THIS_CLASS _Init()
+  {
+    _Ploc = nullptr;
+    _Stdstr = 0;
+    _Except = goodbit;
+    _Fmtfl = skipws | dec;
+    _Prec = 6;
+    _Wide = 0;
+    _Arr = nullptr;
+    _Calls = nullptr;
+    clear(goodbit);
+    _Ploc = new locale;
+  }
+
+private:
+  iostate _Mystate; // IO状态
+  iostate _Except; // 异常
+  fmtflags _Fmtfl; // 格式化
+  streamsize _Prec; // 格式化精度，和field相关
+  streamsize _Wide; // 格式化精度，和field相关
+  _Iosarray* _Arr; //链表
+  _Fnarray* _Calls; //链表，配合register_callback
+  locale* Ploc;
+};
+</code></pre></div></div>
+
+<p>还有个基础类型是basic_streambuf，是作为缓冲区。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class basic_streambuf
+{
+public:
+  ...
+private:
+  // 以下四个成员是读/写缓冲区的起始元素指针和指向该指针的指针
+  // 其实就是缓冲区
+  _Elem* _Gfirst;
+  _Elem* _Pfirst;
+  _Elem** _IGfirst;
+  _Elem** _IPfirst;
+
+  // 以下四个成员是读/写缓冲区的当前元素指针和指向该指针的指针
+  _Elem* _Gnext;
+  _Elem* _Pnext;
+  _Elem** _IGnext;
+  _Elem** _IPnext;
+
+  // 读/写缓冲区长度和指向该长度值的指针
+  int _Gcount;
+  int _Pcount;
+  int* _IGcount;
+  int* _IPcount;
+
+protected:
+  locale* _Plocale; //本地化相关
+};
+</code></pre></div></div>
+
+<p>这两个类都有个很特别的成员，就是locale。这个类比较复杂，主要成员就是<code class="language-plaintext highlighter-rouge">_Locimp* _Ptr</code>，目的是定义一些facet可以对元素进行一些解析和格式操作。</p>
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2020/08/04/data-structure.html">
+			<span>下一篇</span>
+			数据结构学习
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2020/03/11/video-audio-and-food.html">
+			<span>上一篇</span>
+			美食和影音
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper" style="text-align: center">
+		<p class="rss-subscribe" style="font-size: 12px;">建议安装Noto Sans SC字体浏览博客
+&nbsp;&nbsp;<a href="/feed.xml">订阅</a><br/>
+		© 2015 - 2021</p>
+
+<!--
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans SC字体浏览博客
+</p>
+			</div>
+		</div>
+-->
+	</div>
+
+</footer>
+
+</body>
+
+</html>

@@ -6,8 +6,8 @@
 </description>
     <link>https://svandex.github.io/</link>
     <atom:link href="https://svandex.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 22 Dec 2020 07:59:23 +0000</pubDate>
-    <lastBuildDate>Tue, 22 Dec 2020 07:59:23 +0000</lastBuildDate>
+    <pubDate>Sat, 09 Jan 2021 17:22:46 +0000</pubDate>
+    <lastBuildDate>Sat, 09 Jan 2021 17:22:46 +0000</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -1123,6 +1123,386 @@ DEFINE_LOG_CATEGORY(&amp;lt;LogName&amp;gt;);
       </item>
     
       <item>
+        <title>Windows/STL源码剖析</title>
+        <description>&lt;p&gt;«STL源码剖析»这本书读书时候看过一遍，但是时隔三四年实在是有点忘了，加上最近刷LeetCode的时候，发现其实很多都能用上，所以想着再重新梳理一遍。候杰的书太老了，但是老不代表不经典，依然可以指导我们学习。但是因为知道这本书是比较老的书，所以源码剖析就要真的看现代的源码，来让我们对书中可能的错误甄别出来。我是用的STL来自版本为14.28.29333的MSVC编译器，使用vim加上universal-ctags配合查找源代码。&lt;/p&gt;
+
+&lt;h1 id=&quot;allocator&quot;&gt;allocator&lt;/h1&gt;
+
+&lt;p&gt;空间分配器主要实现了allocate、deallocate、construct、destroy四个主要函数，两个对未分配内存控制的函数uninitialize_fill和uninitialize_copy，除此之外还有一些类型别名的定义，用于萃取器的。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;template &amp;lt;class _Alloc&amp;gt;
+struct allocator_traits : conditional_t&amp;lt;_Is_default_allocator&amp;lt;_Alloc&amp;gt;::value, _Default_allocator_traits&amp;lt;_Alloc&amp;gt;,
+                              _Normal_allocator_traits&amp;lt;_Alloc&amp;gt;&amp;gt; {};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;通过allocator_traits可以选择不同的萃取器。&lt;/p&gt;
+
+&lt;h1 id=&quot;type-traits&quot;&gt;Type Traits&lt;/h1&gt;
+
+&lt;p&gt;STL中的Type Traits非常有用，比如std::copy中利用std::is_trivially_constructible来区分是否用了默认构造函数，从而实现tag dispatching&lt;/p&gt;
+
+&lt;h1 id=&quot;iterator&quot;&gt;iterator&lt;/h1&gt;
+
+&lt;p&gt;迭代器本质上就是包装了指针，实现了递增、递减、解引用、[]等操作，同时还按照规范定义了比如value_type等的类型别名，才能够被iterator_traits使用。很重要的类型别名是iterator_category_tag，实现了tag dispatching才能实现算法的泛型。&lt;/p&gt;
+
+&lt;p&gt;迭代器的实现是在容器里的，或者说和容器配套的；但是有个iterator_base基类，&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// ITERATOR STUFF (from &amp;lt;iterator&amp;gt;)
+// ITERATOR TAGS (from &amp;lt;iterator&amp;gt;)
+struct input_iterator_tag {};
+struct output_iterator_tag {};
+struct forward_iterator_tag : input_iterator_tag {};
+struct bidirectional_iterator_tag : forward_iterator_tag {};
+struct random_access_iterator_tag : bidirectional_iterator_tag {};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;以上来自微软STL的xutility文件，可以看到tag本质就是类类型；除此之外最重要的两个类型是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;std::true_type&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;std::false_type&lt;/code&gt;，这两个继承自&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;std::integral_constant&lt;/code&gt;类模板。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;_STD_BEGIN
+// STRUCT TEMPLATE integral_constant
+template &amp;lt;class _Ty, _Ty _Val&amp;gt;
+struct integral_constant {
+    static constexpr _Ty value = _Val;
+
+    using value_type = _Ty;
+    using type       = integral_constant;
+
+    constexpr operator value_type() const noexcept {
+        return value;
+    }
+
+    _NODISCARD constexpr value_type operator()() const noexcept {
+        return value;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;vector&quot;&gt;vector&lt;/h1&gt;
+
+&lt;p&gt;增删困难，查改方便，迭代器可以用指针替代&lt;/p&gt;
+
+&lt;h1 id=&quot;list&quot;&gt;list&lt;/h1&gt;
+
+&lt;p&gt;增删方便，查改困难，只需要一个迭代器可满足需求，且双向链表的首位相连，意思是最后一个元素的next指针指向了第一个元素。&lt;/p&gt;
+
+&lt;h1 id=&quot;常见算法&quot;&gt;常见算法&lt;/h1&gt;
+
+&lt;h2 id=&quot;数值算法&quot;&gt;数值算法&lt;/h2&gt;
+
+&lt;p&gt;有些算法如果更改函数对象，可以有不同的效果。比如accumulate并不一定就是范围内所有元素相加，也可以是相乘或者相减。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;accumulate&lt;/li&gt;
+  &lt;li&gt;adjacent_difference&lt;/li&gt;
+  &lt;li&gt;partial_sum&lt;/li&gt;
+  &lt;li&gt;inner_product&lt;/li&gt;
+  &lt;li&gt;min,max,equal,mismatch&lt;/li&gt;
+  &lt;li&gt;fill,fill_n&lt;/li&gt;
+  &lt;li&gt;swap,iter_swap&lt;/li&gt;
+  &lt;li&gt;lexicographical_compare&lt;/li&gt;
+  &lt;li&gt;copy,copy_backward&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;copy函数是非常典型的利用泛化和特化的算法。针对于内置类型，通过std::is_trivially_copyable来对拷贝执行memcopy操作；针对非trivial类型再判断是否指针，还是特定迭代器，利用tag dispatching区分指针再进行更细致的操作。比如vector的迭代器其实就是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T*&lt;/code&gt;并不是继承自std::iterator，所以会调用特化的copy版本。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;count,count_if&lt;/li&gt;
+  &lt;li&gt;find,find_if,find_end,find_first_of&lt;/li&gt;
+  &lt;li&gt;adjacent_find&lt;/li&gt;
+  &lt;li&gt;generate,generate_n&lt;/li&gt;
+  &lt;li&gt;remove,remove_copy,remove_if,remove_copy_if&lt;/li&gt;
+  &lt;li&gt;replace,replace_copy,replace_if,replace_copy_if&lt;/li&gt;
+  &lt;li&gt;rotate,rotate_copy&lt;/li&gt;
+  &lt;li&gt;reverse,reverse_copy&lt;/li&gt;
+  &lt;li&gt;unique,unique_copy&lt;/li&gt;
+  &lt;li&gt;search,search_n&lt;/li&gt;
+  &lt;li&gt;transform&lt;/li&gt;
+  &lt;li&gt;merge,inplace_merge&lt;/li&gt;
+  &lt;li&gt;partition&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;还有一些特定用途的算法&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;binary_search,lower_bound,upper_bound,equal_range用于二叉查找&lt;/li&gt;
+  &lt;li&gt;next_permutation,prev_permutation用于排列组合&lt;/li&gt;
+  &lt;li&gt;random_shuffle随机重排&lt;/li&gt;
+  &lt;li&gt;nth_element 保证[first,nth)和[nth,last)两者被nth分割为小于nth的序列和大于nth的序列，但是序列各自都是没有排序的。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;set算法&quot;&gt;set算法&lt;/h2&gt;
+
+&lt;p&gt;都是以set开头命名的&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;set_union&lt;/li&gt;
+  &lt;li&gt;set_intersection&lt;/li&gt;
+  &lt;li&gt;set_difference&lt;/li&gt;
+  &lt;li&gt;set_symmetric_difference&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;函数对象&quot;&gt;函数对象&lt;/h1&gt;
+
+&lt;p&gt;指针能够实现的功能有限，且不能够很好的和容器和算法进行配合操作。函数对象可以分为三种：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;算术运算&lt;/li&gt;
+  &lt;li&gt;关系运算&lt;/li&gt;
+  &lt;li&gt;逻辑运算&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;只支持一元操作和二元操作，更多元就不支持了。和迭代器类似，为了支持萃取器和类型计算，需要标准化定义一些关联类型。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// STRUCT TEMPLATE unary_function
+template &amp;lt;class _Arg, class _Result&amp;gt;
+struct unary_function { // base class for unary functions
+     using argument_type = _Arg;
+     using result_type   = _Result;
+ };
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;以上定义来自微软Windwos文件中的xstddef头文件中，定义了一元操作符的关联类型。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// STRUCT TEMPLATE binary_function
+template &amp;lt;class _Arg1, class _Arg2, class _Result&amp;gt;
+struct binary_function { // base class for binary functions
+    using first_argument_type  = _Arg1;
+    using second_argument_type = _Arg2;
+    using result_type          = _Result;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;以上定义来自微软Windwos文件中的xstddef头文件中，定义了二元操作符的关联类型。我们还可以将二元操作符通过配接器转换为一元操作符，通过binder1st来实现，如下代码来自微软functional头文件：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; // CLASS TEMPLATE binder1st
+template &amp;lt;class _Fn&amp;gt;
+class binder1st : public unary_function&amp;lt;typename _Fn::second_argument_type,
+                        typename _Fn::result_type&amp;gt; { // functor adapter _Func(stored, right)
+public:
+    using _Base         = unary_function&amp;lt;typename _Fn::second_argument_type, typename _Fn::result_type&amp;gt;;
+    using argument_type = typename _Base::argument_type;
+    using result_type   = typename _Base::result_type;
+    binder1st(const _Fn&amp;amp; _Func, const typename _Fn::first_argument_type&amp;amp; _Left) : op(_Func), value(_Left) {}
+
+    result_type operator()(const argument_type&amp;amp; _Right) const {
+      return op(value, _Right);
+   }
+
+     result_type operator()(argument_type&amp;amp; _Right) const {
+        return op(value, _Right);
+    }
+
+protected:
+    _Fn op;
+    typename _Fn::first_argument_type value; // the left operand
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;算术运算函数对象&quot;&gt;算术运算函数对象&lt;/h2&gt;
+
+&lt;p&gt;除了否定运算为一元运算，其他都是二元运算。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;plus&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;minus&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;multiplies&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;divides&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;modules&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;negate&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;关系运算函数对象&quot;&gt;关系运算函数对象&lt;/h2&gt;
+
+&lt;p&gt;全部都是二元运算符。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;equal_to&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;not_equal_to&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;greater&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;greater_equal&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;less&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;less_equal&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;逻辑运算函数对象&quot;&gt;逻辑运算函数对象&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;logical_and&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;logical_or&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+  &lt;li&gt;logical_not&lt;T&gt;&lt;/T&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;适配器&quot;&gt;适配器&lt;/h1&gt;
+
+&lt;p&gt;分为三种，容器适配器，迭代器适配器，函数对象适配器。&lt;/p&gt;
+
+&lt;h2 id=&quot;容器适配器&quot;&gt;容器适配器&lt;/h2&gt;
+
+&lt;p&gt;两者都是deque的适配器。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;queue&lt;/li&gt;
+  &lt;li&gt;stack&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;迭代器适配器&quot;&gt;迭代器适配器&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;insert_iterator，back_insert_iterator,front_insert_iterator是output_iterator的适配器&lt;/li&gt;
+  &lt;li&gt;reverse_iterator,有唯一的保护成员时_BidIt current{}，模板参数是迭代器_BidIt&lt;/li&gt;
+  &lt;li&gt;istream_iterator,ostream_iterator,相比与普通的迭代器，增加了一个istream_type*成员，所以有流的功能。&lt;/li&gt;
+  &lt;li&gt;sregex_iterator,sregex_token_iterator，正则表达式匹配时在多个匹配对象之间选择&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;istream_iterator的构造函数中就会执行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;gt;&amp;gt;&lt;/code&gt;读入操作。ostream_iterator和std::copy联合起来用很有意思,ostream_iterator的赋值运算符会调用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;&amp;lt;&lt;/code&gt;操作符，其他运算符都是返回当前指向位置，所以和std::copy能够产生效果。&lt;/p&gt;
+
+&lt;h1 id=&quot;函数对象适配器&quot;&gt;函数对象适配器&lt;/h1&gt;
+
+&lt;p&gt;函数对象适配器的目的是让各种运算符、成员函数、函数指针都能够标准化。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;运算符都要继承自unary_function和binary_function&lt;/li&gt;
+  &lt;li&gt;成员函数都要通过函数模板mem_fun的处理，有趣的是如果是成员函数是虚函数，还能够实现多态；但要求容器元素类型是指针，因为引用元素的容器是不能存在的，无法分配内存&lt;/li&gt;
+  &lt;li&gt;函数指针都要通过函数模板ptr_fun的处理&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;其中Windows的STL的函数模板mem_fun如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// FUNCTION TEMPLATE mem_fun
+template &amp;lt;class _Result, class _Ty&amp;gt;
+_NODISCARD mem_fun_t&amp;lt;_Result, _Ty&amp;gt; mem_fun(_Result (_Ty::*_Pm)()) {
+    return mem_fun_t&amp;lt;_Result, _Ty&amp;gt;(_Pm);
+}
+
+template &amp;lt;class _Result, class _Ty, class _Arg&amp;gt;
+_NODISCARD mem_fun1_t&amp;lt;_Result, _Ty, _Arg&amp;gt; mem_fun(_Result (_Ty::*_Pm)(_Arg)) {
+   return mem_fun1_t&amp;lt;_Result, _Ty, _Arg&amp;gt;(_Pm);
+}
+
+template &amp;lt;class _Result, class _Ty&amp;gt;
+_NODISCARD const_mem_fun_t&amp;lt;_Result, _Ty&amp;gt; mem_fun(_Result (_Ty::*_Pm)() const) {
+    return const_mem_fun_t&amp;lt;_Result, _Ty&amp;gt;(_Pm);
+}
+
+template &amp;lt;class _Result, class _Ty, class _Arg&amp;gt;
+_NODISCARD const_mem_fun1_t&amp;lt;_Result, _Ty, _Arg&amp;gt; mem_fun(_Result (_Ty::*_Pm)(_Arg) const) {
+    return const_mem_fun1_t&amp;lt;_Result, _Ty, _Arg&amp;gt;(_Pm);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;这里返回的类型如mem_fun_t等其实都是继承自unary_function的类型。而mem_fun1_t是继承自binary_function的类型，因为该成员函数有一个参数_Arg。&lt;/p&gt;
+
+&lt;p&gt;其中Windows的STL的宏ptr_fun如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// FUNCTION TEMPLATE ptr_fun
+#define _PTR_FUN(CALL_OPT, X1, X2, X3)                                                                      \
+    template &amp;lt;class _Arg, class _Result&amp;gt;                                                                    \
+    _NODISCARD pointer_to_unary_function&amp;lt;_Arg, _Result, _Result(CALL_OPT*)(_Arg)&amp;gt; ptr_fun(                  \
+        _Result(CALL_OPT* _Left)(_Arg)) {                                                                   \
+        return pointer_to_unary_function&amp;lt;_Arg, _Result, _Result(CALL_OPT*)(_Arg)&amp;gt;(_Left);                   \
+    }                                                                                                       \
+    template &amp;lt;class _Arg1, class _Arg2, class _Result&amp;gt;                                                      \
+    _NODISCARD pointer_to_binary_function&amp;lt;_Arg1, _Arg2, _Result, _Result(CALL_OPT*)(_Arg1, _Arg2)&amp;gt; ptr_fun( \
+        _Result(CALL_OPT* _Left)(_Arg1, _Arg2)) {                                                           \
+        return pointer_to_binary_function&amp;lt;_Arg1, _Arg2, _Result, _Result(CALL_OPT*)(_Arg1, _Arg2)&amp;gt;(_Left);  \
+     }
+_NON_MEMBER_CALL(_PTR_FUN, X1, X2, X3)
+#undef _PTR_FUN
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;而对于函数指针，则有两个辅助类型，pointer_to_unary_function和pointer_to_binary_function，这两个类其实都是继承自unary_function和binary_function的。&lt;/p&gt;
+
+&lt;h1 id=&quot;一些有意思的类型&quot;&gt;一些有意思的类型&lt;/h1&gt;
+
+&lt;h1 id=&quot;基于流的io&quot;&gt;基于流的IO&lt;/h1&gt;
+
+&lt;p&gt;最基础的ios_base类仅有私有成员，主要处理IO状态，IO异常，格式化，时间，本地化等。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;template&amp;lt;_Dummy&amp;gt;
+class _Iosb
+{
+public:
+  enum _Fmtflags ...
+  enum _Iostate ...
+  enum _Openmode ...
+  enum _Seekdir ...
+};
+
+class ios_base: public _Iosb&amp;lt;int&amp;gt;
+{
+...
+public:
+  size_t _Stdstr;
+
+protected:
+  // 构造函数是保护成员
+  // 该类不能直接构造，用于派生类
+  _CLR_OR_THIS_CALL ios_base();
+
+  // 在派生类的构造函数中经常用到
+  void _CLR_OR_THIS_CLASS _Init()
+  {
+    _Ploc = nullptr;
+    _Stdstr = 0;
+    _Except = goodbit;
+    _Fmtfl = skipws | dec;
+    _Prec = 6;
+    _Wide = 0;
+    _Arr = nullptr;
+    _Calls = nullptr;
+    clear(goodbit);
+    _Ploc = new locale;
+  }
+
+private:
+  iostate _Mystate; // IO状态
+  iostate _Except; // 异常
+  fmtflags _Fmtfl; // 格式化
+  streamsize _Prec; // 格式化精度，和field相关
+  streamsize _Wide; // 格式化精度，和field相关
+  _Iosarray* _Arr; //链表
+  _Fnarray* _Calls; //链表，配合register_callback
+  locale* Ploc;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;还有个基础类型是basic_streambuf，是作为缓冲区。&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class basic_streambuf
+{
+public:
+  ...
+private:
+  // 以下四个成员是读/写缓冲区的起始元素指针和指向该指针的指针
+  // 其实就是缓冲区
+  _Elem* _Gfirst;
+  _Elem* _Pfirst;
+  _Elem** _IGfirst;
+  _Elem** _IPfirst;
+
+  // 以下四个成员是读/写缓冲区的当前元素指针和指向该指针的指针
+  _Elem* _Gnext;
+  _Elem* _Pnext;
+  _Elem** _IGnext;
+  _Elem** _IPnext;
+
+  // 读/写缓冲区长度和指向该长度值的指针
+  int _Gcount;
+  int _Pcount;
+  int* _IGcount;
+  int* _IPcount;
+
+protected:
+  locale* _Plocale; //本地化相关
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这两个类都有个很特别的成员，就是locale。这个类比较复杂，主要成员就是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_Locimp* _Ptr&lt;/code&gt;，目的是定义一些facet可以对元素进行一些解析和格式操作。&lt;/p&gt;
+</description>
+        <pubDate>Wed, 29 Jul 2020 14:23:00 +0000</pubDate>
+        <link>https://svandex.github.io/2020/07/29/STL-Source-Code-Windows.html</link>
+        <guid isPermaLink="true">https://svandex.github.io/2020/07/29/STL-Source-Code-Windows.html</guid>
+        
+        
+      </item>
+    
+      <item>
         <title>美食和影音</title>
         <description>&lt;p&gt;标题用两个名词连在了一起，初看还以为是不是要把这两种东西用各种高大上的词汇描述一番，来阐明关系，其实一点也不是。只是2020年突然来的疫情，让我从来没有那么宅过，然后就发生了好多故事。&lt;/p&gt;
 
@@ -1412,188 +1792,146 @@ DEFINE_LOG_CATEGORY(&amp;lt;LogName&amp;gt;);
       </item>
     
       <item>
-        <title>初探IIS中的C++多线程开发</title>
-        <description>&lt;p&gt;最近花了三周时间详细研究了一下IIS中的WebSocket协议的使用方法，对IIS的请求处理管线(Request Processing Pipeline)也加深了印象，感受到了C++多线程开发的魅力和不容易呀。最初是想学习nginx的，毕竟这是目前最火的服务端开发框架，性能非常的强悍而且有很多大公司都在使用。&lt;/p&gt;
-
-&lt;p&gt;但是毕竟我是在非软件公司，我发现我们汽车行业其实非常多的C++库都是对Windows友好的，有些库甚至在Linux上就没有。典型的比如西门子的PLC产品对Linux的支持就非常的差，国家仪器的DAQMX系列库也是对Windows的兼容性最好，支持的设备也非常多。由于日常和试验设备都需要使用这些库，所以只能在Windows上开发，而最好的服务端开发框架就是IIS了。&lt;/p&gt;
-
-&lt;p&gt;不过在三周的摸索过程中发现，原来用C++开发IIS模块的人实在是太少了。大多数人在Windows上开发或许都比较喜欢用C#吧，甚至微软官方本身竟然对C++开发IIS模块的支持也很少。在IIS官网的论坛上，你甚至都会觉得讨论的不够热烈。在GitHub上你也找不到几个IIS/C++模块开发的仓库，而且关于WebSocket相关的模块开发都无法使用，我发现是他们的多线程状态机不够完善。所以我觉得把自己这三周的摸索总结出来，希望能够吸引一部分人一起学习和进步，也希望引起大家讨论，若我有不足或者错误的地方，敬请提出来。
-&lt;!-- more --&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;iisc开发简介&quot;&gt;IIS/C++开发简介&lt;/h1&gt;
-&lt;p&gt;首先要明确的一点是，IIS/C++开发是多线程开发，是不能够假想程序是按照管线顺序进行的。当你用Visual Studio开始debug模块的时候，你会发现除了主线程MainThread外，还有nativerd.dll线程，四个ntdll.dll!TppWorkerThread，以及四个w3tp.dll线程。如果你加载的模块越多的话，运行时的线程越多。而我们的程序主要就是跑在w3tp.dll上的线程，当你进行多线程调试的时候，可以切换这四个线程进行观察。所以如果你没有多线程开发的基础知识，没有看过«C++ Concurrency in Action»这本书，我劝你先补充点基础知识，花上一个月好好看一下。否则写出来的程序会很糟糕，很多功能无法实现。&lt;/p&gt;
-
-&lt;p&gt;主要是分两种：模块和处理程序。处理程序的英文是handler，它是针对特定URL或者特定文件格式才会响应的；而模块是针对所有的请求都会执行相同的操作，我们一般只要写处理程序就好了，比如专门用于登陆的处理程序接受发送到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/login&lt;/code&gt;的消息。模块开发又分为CGlobalModule和CHttpModule两种，每种对应的事件响应函数都不太相同，而且都需要注册相应的事件响应函数才能触发。两种模块最基本的开发方式看微软官网的&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/develop/runtime-extensibility/develop-a-native-cc-module-for-iis&quot;&gt;文档&lt;/a&gt;就能够很快的理解，这里不再蜇述。其实模块开发就&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/web-server-core-classes&quot;&gt;两个类&lt;/a&gt;，官网上都有介绍。更多的使用到了接口，常见的比如IHttpContext是用的最多的，通过他可以获取到比如连接IHttpConnection，请求IHttpRequest，返回IHttpResponse等对象，然后在这些对象基础上实现你要的功能。&lt;/p&gt;
-
-&lt;p&gt;说到接口就谈一下&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/httpgetextendedinterface-function&quot;&gt;HttpGetExtendedInterface&lt;/a&gt;这个函数。因为IIS是在不断的版本更新中，IHttpContext也有了很多的版本，最新到就是IHttpContext4增加了记录运行时间的功能。要得到这些新的HTTP上下文接口要使用这个函数，比如：&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;IHttpServer* pHttpServer;
-
-//两个版本的IHttpContext
-IHttpContext* pHttpContext;
-IHttpContext3* pHttpContext3;
-
-//接口升级，原接口也还能用
-HttpGetExtendedInterface(pHttpServer,pHttpContext,&amp;amp;pHttpContext3);
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这样你就可以用pHttpContext3来做一些别的工作，比如后面会讲到的IWebSocketContext来进行WebSocket协议通信。还有想要提到的是IHttpContext有个函数是&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpcontext-allocaterequestmemory-method&quot;&gt;AllocateRequestMemory&lt;/a&gt;，类似于malloc的功能可以分配一段内存用来初始化，而IHttpContext的生命周期是整个请求处理管线，这样就能解决堆内存的问题。不过有个问题是，你需要通过移动复制运算符将对象写入到这个内存中去，对移动构造函数和移动赋值运算符的理解要够深，尤其是对象内带指针的话。&lt;/p&gt;
-
-&lt;p&gt;除此之外，还有个很重要的接口是IHttpStoredContext，可以在该接口上派生新的类来实现变量的管理，从而实现特定的功能。比如IWebSocketContext其实就是派生自IHttpStoredContext，专门用来处理WebSocket协议的通信问题，我们可以借鉴这种方式。&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;IWebSocketContext* pWebSocket=IHttpContext3-&amp;gt;GetNamedContextContainer()-&amp;gt;GetNamedContext(IIS_WEBSOCKET)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;这里要引入头文件&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iiswebsocket.h&lt;/code&gt;才能使用IWebSocketContext，还有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IIS_WEBSOCKT&lt;/code&gt;是宏定义宽字符串&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;L&quot;websockets&quot;&lt;/code&gt;。我们可以仿照这种方式通过调用&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/inamedcontextcontainer-setnamedcontext&quot;&gt;SetNamedContext&lt;/a&gt;函数来设定我们自己的IHttpStoredContext进行特定功能的实现，而且通过这种设置IHttpStoredContext方式，可以在不同的线程中通过GetNamedContext来获取到，解决了多线程中变量传递。&lt;/p&gt;
-
-&lt;h1 id=&quot;编译&quot;&gt;编译&lt;/h1&gt;
-&lt;p&gt;单独拿出来说是因为我在这上面就花了一周的时间才解决。因为模块是dll，IIS会调用模块的RegisterModule函数进行注册，所以你的dll要和IIS有相同的二进制边界，就是要用相同的编译器编译的才能够使你的模块有效。因此你需要使用Visual Studio安装文件路径下&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/Community/VC/Auxiliary/Build/vcvarsall.bat&lt;/code&gt;这个脚本文件进行编译器版本切换，比如切换成14.13版本的编译器，可以在cmd中输入&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vcvarsall.bat amd64 -vcvars_ver=14.13&lt;/code&gt;，然后再用cmake将你的代码转换成Visual Studio解决方案，我很推荐这样做是因为Visual Studio对后续你的多线程程序调试很有帮助。&lt;/p&gt;
-
-&lt;p&gt;我们可以通过命令行环境下的dumpbin二进制分析工具了解IIS的模块都需要哪些二进制边界条件。IIS的模块都在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;C:\Windows\System32\inetsrv&lt;/code&gt;文件夹里，比如里面的iiswsock.dll就是官方的WebSocket模块。我们通过命令&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dumpbin /headers iiswsock.dll&lt;/code&gt;可以看到几个信息：&lt;/p&gt;
+        <title>C++对象在运行时内存中分布</title>
+        <description>&lt;p&gt;«Inside C++ Object Model»是一本抽象层次很低的书，其实就是在讲写的代码变成二进制，在运行期间的内存分布情况。我感觉真正需要掌握的知识点也不多，而且翻译的总觉很别扭。&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;链接器版本是14.13，所以我们的编译器版本要设置为14.13&lt;/li&gt;
-  &lt;li&gt;子系统版本是10.00，也即是Windows 10&lt;/li&gt;
-  &lt;li&gt;子系统序号是3，也就是Windows CUI程序，既是控制台程序&lt;/li&gt;
-  &lt;li&gt;DLL特性里面有Control Flow Guard&lt;/li&gt;
+  &lt;li&gt;编译器在对象构造和析构中的行为&lt;/li&gt;
+  &lt;li&gt;合成构造和合成拷贝构造&lt;/li&gt;
+  &lt;li&gt;继承对对象内存分布影响(vtptr)&lt;/li&gt;
+  &lt;li&gt;虚继承对对象分布的影响(vbcptr)&lt;/li&gt;
+  &lt;li&gt;计算偏移量&lt;/li&gt;
+  &lt;li&gt;计算成员地址&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;通过上述分析，我们需要在CMakeLists.txt文件中增加链接相关的选项：&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;target_link_options(&amp;lt;ModuleName&amp;gt; PRIVATE &quot;/SUBSYSTEM:CONSOLE,10.00&quot;)
-target_link_options(&amp;lt;ModuleName&amp;gt; PRIVATE &quot;/GUARD:CF&quot;)
-target_link_options(&amp;lt;ModuleName&amp;gt; PRIVATE &quot;/VERSION:10.00&quot;)
-target_link_options(&amp;lt;ModuleName&amp;gt; PRIVATE &quot;/EXPORT:RegisterModule&quot;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;当然里面还有非常多零星的知识，比如三种成员函数的调用过程等。最核心的问题大概就是上面这些吧。这些知识和ELF文件格式对照着一起消化，应该有不错的效果。&lt;/p&gt;
 
-&lt;p&gt;最后一个链接选项是导出RegisterModule函数，才能够被IIS调用。还有就是最好通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;target_compile_definitions&lt;/code&gt;定义宏&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WIN32_LEAN_AND_MEAN&lt;/code&gt;，宏&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UNICODE&lt;/code&gt;，宏&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_UNICODE&lt;/code&gt;解决一些宽字符等问题。&lt;/p&gt;
+&lt;h1 id=&quot;对象&quot;&gt;对象&lt;/h1&gt;
 
-&lt;p&gt;编译完后，在加载到IIS中之前，需要把相关的dll都放在你的模块dll文件夹中，或者至少要在PATH路径中。而且模块所在的文件夹一定要加入IIS_USR这个用户的权限，这个用户在查找用户中点击高级，然后搜索才能找到，直接搜IIS是搜不到的。很想吐槽微软的安全机制太繁琐了，IIS中各种非登陆用户搞得让人头大。&lt;/p&gt;
+&lt;h2 id=&quot;对象模型&quot;&gt;对象模型&lt;/h2&gt;
 
-&lt;h1 id=&quot;请求处理管线&quot;&gt;请求处理管线&lt;/h1&gt;
+&lt;p&gt;内存中的布局是数据成员，vptr，其中vptr指向vtbl，而vtbl的第一个槽存储的是RTTI的type_info，后续是各种虚函数。非虚函数是存储再对象之外的，且第一个参数必须是对象的引用。&lt;/p&gt;
 
-&lt;p&gt;IIS的请求处理管线分为请求模块CHttpModule和全局模块的CGlobalModule，其中请求模块有12个必然性事件(Deterministic request event)，就是你注册一定会发生的，这些没有太多讲的。需要讲的是5个非必然性事件，其中重点就是&lt;a href=&quot;https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/chttpmodule-onasynccompletion-method&quot;&gt;OnAsyncCompletion&lt;/a&gt;，这是给我们带来巨大的开发困难的函数，也是困扰了我很久的难点。因为这个函数是在主线程中调用了异步函数时就会发生，比如进行了一次&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHttpResponse::WriteEntityChunks&lt;/code&gt;操作，如果是你在主线程的必然性事件中调用了自定义的异步函数，就需要在该必然性事件中返回&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RQ_NOTIFICATION_PENDING&lt;/code&gt;，否则程序不会按照你的想法来执行。&lt;/p&gt;
-
-&lt;h2 id=&quot;工作线程&quot;&gt;工作线程&lt;/h2&gt;
-
-&lt;p&gt;2020/08/22更新：发现这个一年多前些的文章还是有点问题的。最近又自己研究了一下Nginx的源码，不像IIS是闭源的，开源的Nginx看完后给了我更多对IIS的理解。首先Nginx默认是不会读取请求体内容的，而且工作线程也是不能阻塞的，这和IIS是很像的，Nginx在没有读完请求体或者工作线程有其他问题是要立即返回NGX_DONE，感觉上和这里的RQ_NOTIFICATION_PENDING有异曲同工之妙，都是为了不阻塞工作线程,并且不会关闭本次请求！如果关闭该请求，但是有些处理没有完成，就会产生逻辑错误。在这之前，需要将还没有完成的工作，比如读取完请求头再执行的回调函数注册到事件驱动机制中去，比如Nginx中就是epoll机制，等待Nginx的下一次调用epoll。所有IIS中处理读取请求体的回调函数同样道理，没有读完要立即返回给工作线程一个RQ_NOTIFICATION_PENDING表示本次请求还没完，不要关闭请求，等待下次的IO事件触发回调！&lt;/p&gt;
-
-&lt;p&gt;讲到这里就讲到我这篇文章最关键的地方了，也就是多线程开发带来的难点。本质上讲IIS的请求处理管线是靠内部的状态机进行维护的，内部的状态机会不断查看不同状态下的运行情况。如果你在必然性事件中有阻塞，比如你运行了一个无限的while循环，IIS不可能等你运行完，无限循环也不可运行完，再执行其他事情，它会通过其他的监视线程发现后终止掉。所以在你要调用异步函数的必然性事件中，需要返回&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RQ_NOTIFICATION_PENDING&lt;/code&gt;，这样状态机就了解了IIS管线运行到该必然性事件是有潜在的异步函数可能导致阻塞的。&lt;/p&gt;
-
-&lt;p&gt;比如说我们的WebSocket通信。WebSocket首先肯定是等待输入的，有了输入后读取输入，根据输入执行相关操作，再输出。如果我们打开了WebSocket通信，一直不输入，在IIS的请求处理管线的主线程上，IIS是不可能等我们的。因此我们要开启新的线程来维护WebSocket自身的状态机，肯定是一个While循环的，如下伪代码所示:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;std::condition_variable cv
-std::mutex mt
-std::promise ps
-
-//管线主线程
-deterministic_event(){
-
-    async_state_machine();
-
-    //提示IIS在该必然性事件中会有阻塞
-    return RQ_NOTIFICATIN_PENDING;
-}
-
-//OnAsyncCompletion非必然性事件
-OnAsyncCompletion(){
-    ps.wait()
-
-    //其实这里是新的管线主线程,新的线程下继续管线
-    //在必然性事件中返回了PENDING后，async_state_machine就不在管线了，但是仍在同一个线程
-    return RQ_NOTIFICATION_CONTINUE;
-}
-
-//在原管线主线程的栈上调用的函数，不会切换线程
-async_state_machine(){
-    while(TRUE){
-        std::unique_lock&amp;lt;std::mutex&amp;gt; lk(mt);
-        websocket_read(...,read_async_functor,...);
-        cv.wait(mt,[](){return sm_continue});
-        if(close){
-            break;
-        }
-    }
-    ps.set_value(TRUE);
-}
-
-//该函数是WebSocket模块读取一次后执行的不同线程中的回调函数
-read_async_functor(){
-    if(!read_final){
-        while(!read_final){
-            websocket_read()
-        }
-    }
-    websocket_write();
-    sm_continue=TRUE;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这里&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;async_state_machine&lt;/code&gt;函数里有while函数，如果WebSocket通信一直不输入，将会在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cv.wait&lt;/code&gt;一直阻塞。所以如果在必然性事件中比如&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OnAuthorizeRequest&lt;/code&gt;中调用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;async_state_machine&lt;/code&gt;则要返回&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RQ_NOTIFICATION_PENDING&lt;/code&gt;，此时IIS会开新线程执行函数&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OnAsyncCompletion&lt;/code&gt;作为新的管线主线程进行管线，注意如果该函数执行完毕，那么IIS就会直接进入管线的下一个必然性事件。因此我们需要用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;std::promise&lt;/code&gt;来让&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OnAsyncCompletion&lt;/code&gt;处于阻塞状态，直到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;async_state_machine&lt;/code&gt;跳出来while循环并设置&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ps.set_value(TRUE)&lt;/code&gt;,IIS的管线才能到达下一个事件。&lt;/p&gt;
-
-&lt;p&gt;5.1更新:似乎在管线必然性事件中只要有异步事件发生，就会产生新的线程执行OnAsyncCompletion函数，而且通过跟踪执行发现。后续的必然性事件都会执行两次，说明从OnAsyncCompletion之后开了新的管线继续执行，原有的管线线程也仍在继续进行。那么原有管线因为是WebSocket通信，HTTP报文其实body里也没有内容，应该是要返回&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RQ_NOTIFICATION_FINISH&lt;/code&gt;才是正解，然后在OnAsyncCompletion中返回&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RQ_NOTIFICATION_PENDING&lt;/code&gt;进行阻塞。不阻塞的话，该线程先执行完的话，会把正在进行的WebSocket状态机终止掉。&lt;/p&gt;
-
-&lt;h2 id=&quot;处理程序配置&quot;&gt;处理程序配置&lt;/h2&gt;
-&lt;p&gt;处理程序开发完后，加载模块不能直接使用，还需要在处理程序映射中进行设置。具体在IIS的处理程序映射面板中可以找到，需要注意的是如果并不是针对特定文件或者文件夹的，需要勾选掉这个选项，否则可能会和IIS默认的静态文件处理程序冲突。而且还要和其他的处理程序调整前后顺序，很有讲究。&lt;/p&gt;
-
-&lt;h1 id=&quot;后话&quot;&gt;后话&lt;/h1&gt;
-&lt;p&gt;为了实现WebSocket通信，我们需要通过三个线程来构成一个WebSocket的状态机，通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;std::condition_variable&lt;/code&gt;来进行线程通信，让状态切换下去。感兴趣的小伙伴可以用我自己写的&lt;a href=&quot;https://github.com/svandex/RigNet/&quot;&gt;Svandex::WebSocket&lt;/a&gt;类来测试一下该WebSocket通信实现，在该仓库的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Svandex.h&lt;/code&gt;头文件中。&lt;/p&gt;
-</description>
-        <pubDate>Fri, 26 Apr 2019 23:36:44 +0000</pubDate>
-        <link>https://svandex.github.io/2019/04/26/start-on-iis-cpp-development.html</link>
-        <guid isPermaLink="true">https://svandex.github.io/2019/04/26/start-on-iis-cpp-development.html</guid>
-        
-        <category>cpp</category>
-        
-        
-      </item>
-    
-      <item>
-        <title>2019年读书计划</title>
-        <description>&lt;p&gt;又迈入了新的一年。今年更想着重于历史书籍的阅读，注重文化方面的提升。因为我越来越想成为编剧了，我想去做文化产品，我觉得国内这方面的市场应该是非常巨大的。在整个历史长河中，我们&lt;a href=&quot;https://www.gov.cn/zhuanti/xxczh/&quot;&gt;中国人的城镇化&lt;/a&gt;也达到了世界平均水平，国家也有了&lt;a href=&quot;https://www.gov.cn/zhengce/2014-03/16/content_2640075.htm&quot;&gt;《国家新型城镇化规划(2014-2020年)》&lt;/a&gt;，我们中国人要在2020年脱贫了。虽然还有很多人的生活需要为物质奔波，但是我们国家也有很多人对于文化产品有很多的需求。人的一生短短几十年体验，用文化拓展自己的人生体验，我想这对于每个人来说都非常的有吸引力。&lt;/p&gt;
-
-&lt;h1 id=&quot;历史&quot;&gt;历史&lt;/h1&gt;
-&lt;p&gt;去年想要看完的《the cambridge history of china》还是没有启动，还是很惭愧的。2018年遇上了几本好书，比如吕思勉的《中国通史》，上篇按主题比如婚姻、族制等，下篇就是编年史。还有冯友兰的《中国哲学史》，哲学的概念应该是来自于西方的，冯友兰算是新儒家学说的代表人物之一，人生的履历经历了旧中国和新中国，西方民主科学思想的冲击和对中国传统的坚守，融会贯通写下了对中国哲学思想的总结。当然写中国哲学史的还有好几位，比如胡适，都是可以相互借鉴的来看看。
-&lt;!-- more --&gt;&lt;/p&gt;
-
-&lt;p&gt;传统文化中的儒道佛，我最感兴趣的就是儒家了。新儒家思想的作品，梁漱溟的《东西文化及其比较》一定是要拜读的。虽然传统文化都是建立在农耕文明之上，很多是基于大家族的理论构建的文化，随着社会化分工大多都不符合这个时代了，传统的大家族文化也由于社会化分工而逐渐瓦解，但是我相信中国人独特的思维模式，总是能够在传统中探寻，读懂这种文化也就读懂了中国人，能够做出符合国人的文化产品；当然也就读懂了自己。同时新儒家思想在1912年之后的三十几年，为什么没有拯救中国，我也是很想知道原因的，我想新儒家思想应该是比某特色主义更加中国化才对。&lt;/p&gt;
-
-&lt;p&gt;除此之外还有经济史方面主要是《激荡四十年》，据网友说写的很像小说文笔很好，当然里面的事情都不是虚构的。改革开放以来的市场经济，还是让中国社会翻天覆地的。也想了解一下美国的历史，有刘绪贻的《美国通史》，他是美国史研究室主任，应该是中国人研究美国历史等权威了。&lt;/p&gt;
-
-&lt;h1 id=&quot;c&quot;&gt;C++&lt;/h1&gt;
-&lt;p&gt;想要看的书越来越少了。我觉得再加强下这几个方面，多线程和模版元编程，这两块把之前的书本再翻一下总结写篇感想就差不多了。掌握一下Boost.mp11还有loki，多线程编程的话很多库其实提供的功能都很类似，不管是stl还是tbb，还是微软的concurrency空间。去年想要看完的《Linux多线程服务端编程》还没开始看，不仅有多线程编程还涉及到网络相关，应该是不错的。&lt;/p&gt;
-
-&lt;p&gt;还有补一下这两本书，都是烂尾了。《Computer Architecture: A Quantitative Apprach》讲计算架构的，非常基础的知识。还有就是《Game Engine Architecture》把游戏引擎的基础模块，还有渲染管线都看了，后续还有物理引擎和刚体碰撞等内容没看，而且要把Unreal Engine 4官网上的教程要好好做一遍。&lt;/p&gt;
-
-&lt;p&gt;还有想要看的是Vulkan相关的书籍，先把绘图API学习一下来。然后学习渲染引擎，最后是整合整个游戏引擎。今年先把《Learning Vulkan》看完，Vulkan是2016年出的，到现在的学习资料其实并不多。实时渲染引擎相关的书籍，最有名的应该就是《Real Time Rendering》了，这个我打算2020年再看了。&lt;/p&gt;
-
-&lt;h1 id=&quot;经济&quot;&gt;经济&lt;/h1&gt;
-&lt;p&gt;这方面日常生活中看得很多，看看新闻什么，但是很多文章都看不太懂。我觉得还是需要好好补一补经济方面的专业书籍，能够入门。一来是为了方便自己日后生活做决定；二来是为了以后如果有机会开公司的话，这方面的知识是必不可少的。目前还没有定好想要看的书籍，书目主要来自各大学的经济学院科目或者网络上网友推荐，大抵就能找到自己想要看的书了，抓住主要目的是为了入门。&lt;/p&gt;
-
-&lt;p&gt;之前有朋友推荐过&lt;a href=&quot;https://en.wikipedia.org/wiki/Frederic_Mishkin&quot;&gt;Frederic Mishkin&lt;/a&gt;的《The Economics of Money, Banking &amp;amp; Financial Markets》打算看一看。还有国外大学据说流行&lt;a href=&quot;https://en.wikipedia.org/wiki/Greg_Mankiw&quot;&gt;Gre Mankiw&lt;/a&gt;的《Principle of Economics》，但是又有人说这本书由于太入门太浅显，里面很多的理论并不完全符合专业说法，容易在后期学习留下后遗症？&lt;/p&gt;
-
-&lt;h1 id=&quot;结束语&quot;&gt;结束语&lt;/h1&gt;
-
-&lt;p&gt;除了读书之外，今年想要更多的去看展和听讲座，周末实在是太宅了。我完全不想一直待在房间里，心很塞。回顾一下去年发现，去年想要看的好多书都没有看，惭愧。总结一下要看的书籍：&lt;/p&gt;
+&lt;p&gt;内存分布&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;中国通史&lt;/li&gt;
-  &lt;li&gt;美国通史&lt;/li&gt;
-  &lt;li&gt;中国哲学史&lt;/li&gt;
-  &lt;li&gt;东西文化及其比较&lt;/li&gt;
-  &lt;li&gt;激荡四十年&lt;/li&gt;
-  &lt;li&gt;Linux多线程服务端编程&lt;/li&gt;
-  &lt;li&gt;Principle of Economics&lt;/li&gt;
-  &lt;li&gt;The Economics of Money, Banking &amp;amp; Financial Markets&lt;/li&gt;
-  &lt;li&gt;Computer Architecture: A Quantitative Approach&lt;/li&gt;
-  &lt;li&gt;Game Engine Architecture&lt;/li&gt;
-  &lt;li&gt;Learning Vulkan&lt;/li&gt;
-  &lt;li&gt;the Cambridge history of china, 12th, 13th, 14th, 1912-1986&lt;/li&gt;
+  &lt;li&gt;非静态成员大小&lt;/li&gt;
+  &lt;li&gt;内存对齐，为了总线效率；填充字节也会继承到子类对象中&lt;/li&gt;
+  &lt;li&gt;虚表指针vptr及vtbl对应成本&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;h2 id=&quot;对象的差异&quot;&gt;对象的差异&lt;/h2&gt;
+
+&lt;p&gt;指针和引用类型是动态类型，除了内建类型外。函数参数为指针的情况下，实参传递引用也会造成多态。&lt;/p&gt;
+
+&lt;p&gt;基于对象和面向对象是两个不同概念！面向对象一定要充分利用指针和引用类型实现动态类型！因为动态类型是在继承体系的基础上来实现的，充分利用了继承体系。&lt;/p&gt;
+
+&lt;p&gt;资源不仅仅是内存，还可能是文件句柄，锁，线程句柄等，都需要释放。所以RAII不仅仅是针对内存来设计的。&lt;/p&gt;
+
+&lt;h1 id=&quot;构造函数&quot;&gt;构造函数&lt;/h1&gt;
+
+&lt;p&gt;如果一个类的数据成员对应类型有自定义构造函数，那么该类就是non-trivial。&lt;/p&gt;
+
+&lt;p&gt;四种情况下会构造出implicit non-trivial default constructor，且该构造函数只会满足编译器的需求，一些其他的非静态成员对象是程序员的职责去初始化：&lt;/p&gt;
+
+&lt;p&gt;拷贝构造函数也有类似的情况，当类是non-trivial的时候才会默认构造，因为不能执行bitwise-copy。&lt;/p&gt;
+
+&lt;p&gt;当子类或者成员对象拥有virtual属性时，如果子类和父类对象之间拷贝，因为vtbl对于每个对象来说肯定不同的，所以肯定不能拷贝vptr，所以不是bitwise-copy的。&lt;/p&gt;
+
+&lt;p&gt;注意两点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;构造函数和拷贝构造函数，对于non-trivial类型都是依次调用自己成员对象的构造函数和拷贝构造函数的；&lt;/li&gt;
+  &lt;li&gt;编译器隐式构造函数不会初始化trivial的成员对象；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;对象成员&quot;&gt;对象成员&lt;/h1&gt;
+
+&lt;p&gt;按照声明顺序地址增加排列对象，但是对象之间可能有因为内存对齐导致的填充字节。
+vptr到底是放在所有成员对象之前还是之后，这是和编译器有关的。&lt;/p&gt;
+
+&lt;p&gt;成员函数的调用，第一个参数默认是this指针，函数内的成员都是通过this+offset来进行间接寻址。如果有vptr则是通过this+vptr+offset来间接寻址。&lt;/p&gt;
+
+&lt;p&gt;基类如果有很多内存对齐的填充字节，那么子类中也会有该填充字节，导致子类空间浪费。这是为了保证bitwise-copy而允许了子类中的基类对象空间分布不被编译器破坏，所以不调整填充字节。&lt;/p&gt;
+
+&lt;h1 id=&quot;函数成员&quot;&gt;函数成员&lt;/h1&gt;
+
+&lt;p&gt;vptr加上vtbl中的RTTI来实现的多态！因为基类指针指向派生类对象，这个派生类对象的RTTI信息就用来实现多态！&lt;/p&gt;
+
+&lt;p&gt;在msvc中派生类重载函数的操作符&amp;amp;是非法操作，但是在gcc中操作符&amp;amp;是可以获得偏移量的。&lt;/p&gt;
+
+&lt;h1 id=&quot;构造析构拷贝移动&quot;&gt;构造、析构、拷贝、移动&lt;/h1&gt;
+
+&lt;p&gt;这本书是1996年的，肯定是没有讲到移动的。&lt;/p&gt;
+
+&lt;p&gt;抽象类是存在纯虚函数成员的类，是不能够产生对象的。当抽象类内有数据成员时，该数据成员的初始化就是非常头疼的事情。另外还需要定义纯虚析构函数，因为每个在该抽象类上派生的子类，一定是要定义自己的析构函数的。&lt;/p&gt;
+
+&lt;h1 id=&quot;faq&quot;&gt;FAQ&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;vptr到底放在哪里？如何获得？&lt;/strong&gt;
+msvc应该是放在了头部&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;vtbl如何获得？结构如何?&lt;/strong&gt;
+第一个位置存放RTTI信息；后续存放每个虚函数地址，是否包含基类的虚函数呢？&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;vptr对于每个对象只有一个吗？&lt;/strong&gt;
+对于每个子对象有零个或者1一个vptr，但是通过继承之后的子类的虚函数会增加到每个子对象的vtbl中去。图4.2很明显的显示了这个布局。或者说整个继承体系构成了一个继承树，有多少个叶子结点就有多少个vptr。每个vtbl要把到根结点中每个类的虚函数加入进来。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;虚函数，虚继承，多重继承会导致子类对象的内存分布发生什么样的变化？&lt;/strong&gt;
+msvc中虚基类的地址，是在vtbl中存储了一个虚基类的偏移量来实现的；虚基类在每次派生过程中都有可能移动位置，所以需要在vtbl中记录这种变动。vptr索引为正是函数，索引为负是虚基类地址；这是SUN编译器实现方法。msvc并不像SUN编译器，还是有vbcptr的。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;如何计算不同类型对象地址之间的差值？&lt;/strong&gt;
+需要将地址转换成字节指针，比如(char*)&amp;amp;object，然后在进行相减。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;如何理解关键字virtual&lt;/strong&gt;
+当用于虚拟继承时，说明虚基类要直接作为子对象放入对象中且只有一份，但是位置是不确定的；所以需要增加vbcptr。
+当用于修饰函数时，说明该对象需要增加vptr对象指向一个vtbl。如果是具体继承，则子对象和对象共用同一个vptr。&lt;/p&gt;
+
+&lt;p&gt;书中的vbcptr是在vtbl中的，这和msvc的实现不同。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class A{vitual void funA();};
+class B:public A{virtual void funB()};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这里A和B的大小都是一个字长，因为可以公用vptr。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class A{vitual void funA();};
+class B:public virtual A{virtual void funB()};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这里A的大小是字长，B的大小是三个字长；因为B的对象中要有一份A的子对象，除此之外还要自己的vptr因为不能公用，和指向子对象的vbcptr。也就是两个vptr加上一个vbcptr，所以总共是三个字长。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;打印地址和打印偏移量&lt;/strong&gt;
+用取地址符&amp;amp;可以打印地址，打印偏移量要用printf比如&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;printf(&quot;&amp;amp;Point3d::x = %p\n&quot;,&amp;amp;Point3d::x)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;注意！这里偏移量只是相对于子对象来说！继承类的偏移量还是0，这是书中没有讲清楚的地方！如下&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Vertex:public Point3d{...};
+printf(&quot;&amp;amp;Point3d::x = %p\n&quot;,&amp;amp;Point3d::x)
+printf(&quot;&amp;amp;Vertex::x = %p\n&quot;,&amp;amp;Vertex::x)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;所以有指向成员的指针，比如float Point3d::* p=&amp;amp;Point3d::x，注意如果有虚基类，该指针应该是会变化的。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Point3d p;
+printf(&quot;&amp;amp;p.x = %p\n&quot;,&amp;amp;p.x);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;对于绑定的对象来说，&amp;amp;p.x得到的是真实的内存地址。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;多态中的构造和析构会调整指针&lt;/strong&gt;
+基类指针指向派生类，生成的指针并不是指向了派生类的初始位置！析构的时候也不是从指针指向位置开始析构的！&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;base* ptr=new Derived;
+delete ptr;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
-        <pubDate>Wed, 02 Jan 2019 22:33:09 +0000</pubDate>
-        <link>https://svandex.github.io/2019/01/02/reading-plan-in-2019.html</link>
-        <guid isPermaLink="true">https://svandex.github.io/2019/01/02/reading-plan-in-2019.html</guid>
-        
-        <category>读书计划</category>
+        <pubDate>Sun, 04 Aug 2019 16:08:00 +0000</pubDate>
+        <link>https://svandex.github.io/2019/08/04/Runtime-Cpp-Object-In-Memory.html</link>
+        <guid isPermaLink="true">https://svandex.github.io/2019/08/04/Runtime-Cpp-Object-In-Memory.html</guid>
         
         
       </item>

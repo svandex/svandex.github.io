@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • C++对象在运行时内存中分布">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>C++对象在运行时内存中分布</title>
+	<meta name="description" content="«Inside C++ Object Model»是一本抽象层次很低的书，其实就是在讲写的代码变成二进制，在运行期间的内存分布情况。我感觉真正需要掌握的知识点也不多，而且翻译的总觉很别扭。  编译器在对象构造和析构中的行为  合成构造和合成拷贝构造  继承对对象内存分布影响(vtptr)  虚继承对对象分布的影响...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2019/08/04/Runtime-Cpp-Object-In-Memory.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	
+		<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+	
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2019年08月04日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">C++对象在运行时内存中分布</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>«Inside C++ Object Model»是一本抽象层次很低的书，其实就是在讲写的代码变成二进制，在运行期间的内存分布情况。我感觉真正需要掌握的知识点也不多，而且翻译的总觉很别扭。</p>
+
+<ul>
+  <li>编译器在对象构造和析构中的行为</li>
+  <li>合成构造和合成拷贝构造</li>
+  <li>继承对对象内存分布影响(vtptr)</li>
+  <li>虚继承对对象分布的影响(vbcptr)</li>
+  <li>计算偏移量</li>
+  <li>计算成员地址</li>
+</ul>
+
+<p>当然里面还有非常多零星的知识，比如三种成员函数的调用过程等。最核心的问题大概就是上面这些吧。这些知识和ELF文件格式对照着一起消化，应该有不错的效果。</p>
+
+<h1 id="对象">对象</h1>
+
+<h2 id="对象模型">对象模型</h2>
+
+<p>内存中的布局是数据成员，vptr，其中vptr指向vtbl，而vtbl的第一个槽存储的是RTTI的type_info，后续是各种虚函数。非虚函数是存储再对象之外的，且第一个参数必须是对象的引用。</p>
+
+<p>内存分布</p>
+
+<ul>
+  <li>非静态成员大小</li>
+  <li>内存对齐，为了总线效率；填充字节也会继承到子类对象中</li>
+  <li>虚表指针vptr及vtbl对应成本</li>
+</ul>
+
+<h2 id="对象的差异">对象的差异</h2>
+
+<p>指针和引用类型是动态类型，除了内建类型外。函数参数为指针的情况下，实参传递引用也会造成多态。</p>
+
+<p>基于对象和面向对象是两个不同概念！面向对象一定要充分利用指针和引用类型实现动态类型！因为动态类型是在继承体系的基础上来实现的，充分利用了继承体系。</p>
+
+<p>资源不仅仅是内存，还可能是文件句柄，锁，线程句柄等，都需要释放。所以RAII不仅仅是针对内存来设计的。</p>
+
+<h1 id="构造函数">构造函数</h1>
+
+<p>如果一个类的数据成员对应类型有自定义构造函数，那么该类就是non-trivial。</p>
+
+<p>四种情况下会构造出implicit non-trivial default constructor，且该构造函数只会满足编译器的需求，一些其他的非静态成员对象是程序员的职责去初始化：</p>
+
+<p>拷贝构造函数也有类似的情况，当类是non-trivial的时候才会默认构造，因为不能执行bitwise-copy。</p>
+
+<p>当子类或者成员对象拥有virtual属性时，如果子类和父类对象之间拷贝，因为vtbl对于每个对象来说肯定不同的，所以肯定不能拷贝vptr，所以不是bitwise-copy的。</p>
+
+<p>注意两点：</p>
+
+<ul>
+  <li>构造函数和拷贝构造函数，对于non-trivial类型都是依次调用自己成员对象的构造函数和拷贝构造函数的；</li>
+  <li>编译器隐式构造函数不会初始化trivial的成员对象；</li>
+</ul>
+
+<h1 id="对象成员">对象成员</h1>
+
+<p>按照声明顺序地址增加排列对象，但是对象之间可能有因为内存对齐导致的填充字节。
+vptr到底是放在所有成员对象之前还是之后，这是和编译器有关的。</p>
+
+<p>成员函数的调用，第一个参数默认是this指针，函数内的成员都是通过this+offset来进行间接寻址。如果有vptr则是通过this+vptr+offset来间接寻址。</p>
+
+<p>基类如果有很多内存对齐的填充字节，那么子类中也会有该填充字节，导致子类空间浪费。这是为了保证bitwise-copy而允许了子类中的基类对象空间分布不被编译器破坏，所以不调整填充字节。</p>
+
+<h1 id="函数成员">函数成员</h1>
+
+<p>vptr加上vtbl中的RTTI来实现的多态！因为基类指针指向派生类对象，这个派生类对象的RTTI信息就用来实现多态！</p>
+
+<p>在msvc中派生类重载函数的操作符&amp;是非法操作，但是在gcc中操作符&amp;是可以获得偏移量的。</p>
+
+<h1 id="构造析构拷贝移动">构造、析构、拷贝、移动</h1>
+
+<p>这本书是1996年的，肯定是没有讲到移动的。</p>
+
+<p>抽象类是存在纯虚函数成员的类，是不能够产生对象的。当抽象类内有数据成员时，该数据成员的初始化就是非常头疼的事情。另外还需要定义纯虚析构函数，因为每个在该抽象类上派生的子类，一定是要定义自己的析构函数的。</p>
+
+<h1 id="faq">FAQ</h1>
+
+<p><strong>vptr到底放在哪里？如何获得？</strong>
+msvc应该是放在了头部</p>
+
+<p><strong>vtbl如何获得？结构如何?</strong>
+第一个位置存放RTTI信息；后续存放每个虚函数地址，是否包含基类的虚函数呢？</p>
+
+<p><strong>vptr对于每个对象只有一个吗？</strong>
+对于每个子对象有零个或者1一个vptr，但是通过继承之后的子类的虚函数会增加到每个子对象的vtbl中去。图4.2很明显的显示了这个布局。或者说整个继承体系构成了一个继承树，有多少个叶子结点就有多少个vptr。每个vtbl要把到根结点中每个类的虚函数加入进来。</p>
+
+<p><strong>虚函数，虚继承，多重继承会导致子类对象的内存分布发生什么样的变化？</strong>
+msvc中虚基类的地址，是在vtbl中存储了一个虚基类的偏移量来实现的；虚基类在每次派生过程中都有可能移动位置，所以需要在vtbl中记录这种变动。vptr索引为正是函数，索引为负是虚基类地址；这是SUN编译器实现方法。msvc并不像SUN编译器，还是有vbcptr的。</p>
+
+<p><strong>如何计算不同类型对象地址之间的差值？</strong>
+需要将地址转换成字节指针，比如(char*)&amp;object，然后在进行相减。</p>
+
+<p><strong>如何理解关键字virtual</strong>
+当用于虚拟继承时，说明虚基类要直接作为子对象放入对象中且只有一份，但是位置是不确定的；所以需要增加vbcptr。
+当用于修饰函数时，说明该对象需要增加vptr对象指向一个vtbl。如果是具体继承，则子对象和对象共用同一个vptr。</p>
+
+<p>书中的vbcptr是在vtbl中的，这和msvc的实现不同。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class A{vitual void funA();};
+class B:public A{virtual void funB()};
+</code></pre></div></div>
+
+<p>这里A和B的大小都是一个字长，因为可以公用vptr。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class A{vitual void funA();};
+class B:public virtual A{virtual void funB()};
+</code></pre></div></div>
+
+<p>这里A的大小是字长，B的大小是三个字长；因为B的对象中要有一份A的子对象，除此之外还要自己的vptr因为不能公用，和指向子对象的vbcptr。也就是两个vptr加上一个vbcptr，所以总共是三个字长。</p>
+
+<p><strong>打印地址和打印偏移量</strong>
+用取地址符&amp;可以打印地址，打印偏移量要用printf比如</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>printf("&amp;Point3d::x = %p\n",&amp;Point3d::x)
+</code></pre></div></div>
+
+<p>注意！这里偏移量只是相对于子对象来说！继承类的偏移量还是0，这是书中没有讲清楚的地方！如下</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Vertex:public Point3d{...};
+printf("&amp;Point3d::x = %p\n",&amp;Point3d::x)
+printf("&amp;Vertex::x = %p\n",&amp;Vertex::x)
+</code></pre></div></div>
+
+<p>所以有指向成员的指针，比如float Point3d::* p=&amp;Point3d::x，注意如果有虚基类，该指针应该是会变化的。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Point3d p;
+printf("&amp;p.x = %p\n",&amp;p.x);
+</code></pre></div></div>
+
+<p>对于绑定的对象来说，&amp;p.x得到的是真实的内存地址。</p>
+
+<p><strong>多态中的构造和析构会调整指针</strong>
+基类指针指向派生类，生成的指针并不是指向了派生类的初始位置！析构的时候也不是从指针指向位置开始析构的！</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>base* ptr=new Derived;
+delete ptr;
+</code></pre></div></div>
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2019/08/06/few-thoughts-on-history.html">
+			<span>下一篇</span>
+			一些历史思考
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2019/04/26/start-on-iis-cpp-development.html">
+			<span>上一篇</span>
+			初探IIS中的C++多线程开发
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper" style="text-align: center">
+		<p class="rss-subscribe" style="font-size: 12px;">建议安装Noto Sans SC字体浏览博客
+&nbsp;&nbsp;<a href="/feed.xml">订阅</a><br/>
+		© 2015 - 2021</p>
+
+<!--
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans SC字体浏览博客
+</p>
+			</div>
+		</div>
+-->
+	</div>
+
+</footer>
+
+</body>
+
+</html>
