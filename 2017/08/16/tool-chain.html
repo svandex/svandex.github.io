@@ -136,6 +136,9 @@
 
 <p>这里的discoverSystemIncludes是是否进行编译器的include文件夹推断的，而且会对clang++和g++对都推断一次，如果你的操作系统比如WIndows一般都没装g++，会产生大量的错误出来，特别恶心。所以这里设置成false可以关掉这个功能，我发现作者是默认设置这个打开的，因为他就是在linux上开发的吧。</p>
 
+<h2 id="vim-airline">vim-airline</h2>
+<p><a href="https://github.com/vim-airline/vim-airline">vim-airline</a>能够在vim底端显示一些状态，非常实用，因为你很多时候很想知道目前在整个文档的哪个位置，现在的编码格式是什么。还有一点是，现在的编辑模式是什么，方便切换。</p>
+
 <h1 id="cmake">CMake</h1>
 <p>一个最简单的CMakeLists.txt如下所示：</p>
 
@@ -151,8 +154,29 @@ add_executable(targetname sourcefilelist)
 
 <h1 id="shell脚本">Shell脚本</h1>
 <p>在Windows上就是cmd和powershell，在UNIX上就是bash了，当然也有其他变种，最流行的就是bash了。Shell脚本的具体语法，我也不具体多说了，主要分享一些自己的经验。</p>
+
+<p>我比较喜欢用微软新出的Windows Terminal工具，界面非常的漂亮，渲染是通过DirectX来实现的。</p>
+
+<h2 id="windows下的unix环境">Windows下的UNIX环境</h2>
+<p>肯定会想到WSL的，但是我更喜欢用MSYS2工具。到清华大学的镜像源中下载安装包，安装好后默认打开是弹出个窗口，非常的不好看。但是我们可以通过配置Windows Terminal实现将MSYS2嵌入到里面，打开WT的配置文件写入</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "guid": "{&lt;your_guid&gt;}",
+  "name": "MSYS2",
+  "commandline": "C:/msys64/msys2_shell.cmd -defterm -no-start -use-full-path -here -mingw64",
+  "colorScheme": "Novel",
+  "icon" : "C:/msys64/msys2.ico",
+  "closeOnExit": true,
+  "startingDirectory": "C:/Users/svandex"
+}
+</code></pre></div></div>
+
+<p>这样可以在WT中开启新的选项卡而不用弹出黑框。</p>
+
 <h2 id="环境变量">环境变量</h2>
-<p>环境变量说白了，就是当你打开Shell控制台的时候，在该控制台进程中可以用的变量。比如最常用的Path环境变量，控制台用于寻找可执行文件就在Path中寻找。在Powershell中将环境变量env当作了Provider，可以像文件系统一样在其中浏览和编辑，可以使用Get-Child也就是ls命令。注册表HKLM和HKCU也都是Provider，可以浏览和编辑。在Bash中的话，环境变了要通过$来获取，直接方便。</p>
+<p>环境变量说白了，就是当你打开Shell控制台的时候，在该控制台进程中可以用的变量。任何进程加载到时候都需要加载环境变量的，shell程序也是一种程序，也会加载环境变量。</p>
+
+<p>比如最常用的Path环境变量，控制台用于寻找可执行文件就在Path中寻找。在Powershell中将环境变量env当作了Provider，可以像文件系统一样在其中浏览和编辑，可以使用Get-Child也就是ls命令。注册表HKLM和HKCU也都是Provider，可以浏览和编辑。在Bash中的话，环境变了要通过$来获取，直接方便。</p>
 
 <p>在Windows上用命令行开发，非常支持将开始菜单下Visual Studio 2017里的命令行工具(本质上是launchdevcmd.bat脚本)放到特定的文件夹下，当你ssh连接到Windows时，调用这个命令行工具可以设置很多环境变量。在<code class="language-plaintext highlighter-rouge">%vsinstalldir%\common7\tools</code>下有好几个bat脚本文件：</p>
 

@@ -76,18 +76,60 @@ struct allocator_traits : conditional_t&lt;_Is_default_allocator&lt;_Alloc&gt;::
 
 <p>迭代器本质上就是包装了指针，实现了递增、递减、解引用、[]等操作，同时还按照规范定义了比如value_type等的类型别名，才能够被iterator_traits使用。很重要的类型别名是iterator_category_tag，实现了tag dispatching才能实现算法的泛型。</p>
 
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template &lt;class _Alvbase_wrapped&gt;
+class _Vb_iterator: public _Vb_const_iterator&lt;_Alvbase_wrapped&gt;
+{
+public:
+  using _Mybase = _Vb_const_iterator&lt;_Alvbase_wrapped&gt;;
+  ...
+  using iterator_category = random_access_iterator_tag;
+  ...
+
+  _NODISCARD reference operator *() const noexcept{…}
+  _Vb_iterator&amp; operator ++() const noexcept{…}
+  _Vb_iterator&amp; operator --() const noexcept{…}
+  …
+}
+</code></pre></div></div>
+
+<p>上述代码是std::vector的迭代器实现方法，因为其iterator_category是随机存取迭代器标签类即random_access_iterator_tag，所以需要实现几乎所有的操作。</p>
+
 <p>迭代器的实现是在容器里的，或者说和容器配套的；但是有个iterator_base基类，</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// ITERATOR STUFF (from &lt;iterator&gt;)
-// ITERATOR TAGS (from &lt;iterator&gt;)
-struct input_iterator_tag {};
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct input_iterator_tag {};
 struct output_iterator_tag {};
 struct forward_iterator_tag : input_iterator_tag {};
 struct bidirectional_iterator_tag : forward_iterator_tag {};
 struct random_access_iterator_tag : bidirectional_iterator_tag {};
 </code></pre></div></div>
 
-<p>以上来自微软STL的xutility文件，可以看到tag本质就是类类型；除此之外最重要的两个类型是<code class="language-plaintext highlighter-rouge">std::true_type</code>和<code class="language-plaintext highlighter-rouge">std::false_type</code>，这两个继承自<code class="language-plaintext highlighter-rouge">std::integral_constant</code>类模板。</p>
+<p>以上来自微软STL的xutility文件，可以看到tag本质就是类类型；</p>
+
+<p>有一些迭代器在STL中已经定义好了。输入迭代器有istream_iterator和istreambuf_iterator，输出迭代器有ostream_iterator和ostreambuf_iterator。</p>
+
+<p>如果要自定义迭代器，那么要符合iterator_traits的要求</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template &lt;class _Iter&gt;
+struct _Iterator_traits_base&lt;_Iter,
+  void_t&lt;
+    typename _Iter::iterator_category,
+    typename _Iter::value_type,
+    typename _Iter::difference_type,
+    tyepname _Iter::pointer,
+    typename _Iter::reference
+  &gt;&gt;
+  {
+    using iterator_category = typename _Iter::iterator_category;
+    using value_type = typename _Iter::value_type;
+    using difference_type = typename _Iter::difference_type;
+    using pointer = typename _Iter::pointer;
+    using reference = typename _Iter::reference;
+  };
+</code></pre></div></div>
+
+<p>也就是要满足以上五个关联类型，然后还要满足特定迭代器类型对应的运算符操作。</p>
+
+<p>除此之外最重要的两个类型是<code class="language-plaintext highlighter-rouge">std::true_type</code>和<code class="language-plaintext highlighter-rouge">std::false_type</code>，这两个继承自<code class="language-plaintext highlighter-rouge">std::integral_constant</code>类模板。</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_STD_BEGIN
 // STRUCT TEMPLATE integral_constant
@@ -108,13 +150,31 @@ struct integral_constant {
 };
 </code></pre></div></div>
 
-<h1 id="vector">vector</h1>
+<h1 id="容器">容器</h1>
+<h2 id="vector">vector</h2>
 
-<p>增删困难，查改方便，迭代器可以用指针替代</p>
+<p>增删困难，查改方便，迭代器可以用指针替代。但是比较特别的是vector<bool>并不是容器，因为该类型是按照比特位来存储bool值的，但是指针操作最小也是指向字节，因此没有办法通过指针操作进行赋值和解引用，</bool></p>
 
-<h1 id="list">list</h1>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>using _Vbase = unsigned int; // word type for vector&lt;bool&gt; representation
+
+template&lt;class _Alloc&gt;
+struct allocator_traits: conditional_t&lt;_Is_default_allocator&lt;_Alloc&gt;::value, _Default_allocator_traits&lt;_Alloc&gt;, _Normal_allocator_traits&lt;_Alloc&gt;&gt; {};
+
+template&lt;class _Alloc, cllass _Value_type&gt;
+using _Rebind_alloct_t = tpyename allocator_traits&lt;_Alloc&gt;::template rebind_alloc&lt;_Value_type&gt;;
+</code></pre></div></div>
+
+<p>尽可能不要使用vector<bool>，或者使用deque<bool>替代。</bool></bool></p>
+
+<h2 id="list">list</h2>
 
 <p>增删方便，查改困难，只需要一个迭代器可满足需求，且双向链表的首位相连，意思是最后一个元素的next指针指向了第一个元素。</p>
+
+<h2 id="deque">deque</h2>
+
+<p>通过指针数组实现的，每个指针又指向了类型T对应的数组。</p>
+
+<p>std::stack和std::queue都是std::deque的适配器。</p>
 
 <h1 id="常见算法">常见算法</h1>
 
@@ -340,9 +400,9 @@ _NON_MEMBER_CALL(_PTR_FUN, X1, X2, X3)
 
 <p>而对于函数指针，则有两个辅助类型，pointer_to_unary_function和pointer_to_binary_function，这两个类其实都是继承自unary_function和binary_function的。</p>
 
-<h1 id="一些有意思的类型">一些有意思的类型</h1>
+<h1 id="知识点">知识点</h1>
 
-<h1 id="基于流的io">基于流的IO</h1>
+<h2 id="基于流的io">基于流的IO</h2>
 
 <p>最基础的ios_base类仅有私有成员，主要处理IO状态，IO异常，格式化，时间，本地化等。</p>
 
@@ -425,6 +485,125 @@ protected:
 </code></pre></div></div>
 
 <p>这两个类都有个很特别的成员，就是locale。这个类比较复杂，主要成员就是<code class="language-plaintext highlighter-rouge">_Locimp* _Ptr</code>，目的是定义一些facet可以对元素进行一些解析和格式操作。</p>
+
+<h2 id="c11新特性">C++11新特性</h2>
+
+<p>当有人问C++11有什么新东西的时候，我总结起来有以下部分</p>
+
+<ul>
+  <li>原子操作库</li>
+  <li>多线程库</li>
+  <li>正则表达式库</li>
+  <li>std::function</li>
+  <li>std::array</li>
+  <li>std::initializer_list</li>
+  <li>std::tuple</li>
+  <li>类型萃取器</li>
+  <li>移动语义和值分类(value category)</li>
+</ul>
+
+<p>研究下function的实现方法可以很好的理解模版的使用，function是动态多态和静态多态的结合，非常的经典。</p>
+
+<h2 id="值分类">值分类</h2>
+
+<p>值分类是个很有意思的东西；</p>
+
+<ul>
+  <li>左值和右值是按照等号两边来区分的</li>
+  <li>左值引用和右值引用都是左值</li>
+  <li>有名字的右值引用是左值；右值引用还能是右值，std::move就是生成右值引用的右值。</li>
+  <li>常左值引用既可以接受左值，又可以接受右值。</li>
+  <li>模板中有引用折叠概念</li>
+  <li>左值引用和右值引用的左值作为右值传递参数时会退化，std::decay_t在编译期实现了类似功能</li>
+</ul>
+
+<p>为什么要发明右值引用呢！因为要帮助实现移动语义，也就是移动构造/赋值。std::move可以生成右值引用的右值。</p>
+
+<p>可调用对象的构造是按值传递的，调用拷贝赋值运算符，左值引用不能成为右值，所以要用std::reference_wrapper生成右值传递，然后再隐式转换为左值。</p>
+
+<p>常见的std::thread就是接受可调用对象，还有通过std::bind生成可调用对象std::function，这两种情况下都要传递左值引用，需要通过std::ref来实现。</p>
+
+<ul>
+  <li>std::move</li>
+  <li>std::ref</li>
+  <li>std::decay_t</li>
+</ul>
+
+<p>三个知识点非常的有用。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;class _Tp&gt;
+class reference_wrapper:public __weak_result_type&lt;_Tp&gt;
+{
+public:
+  using type = _Tp;
+  type* __f_;
+
+  operator type&amp; () const{return *__f_;};//隐式转换为左值，最重要功能！
+
+  //本身也是可调用对象
+  template &lt;class... _ArgTypes&gt;
+  typename __invoke_of&lt;type&amp;, _ArgTypes...&gt;::type
+  operator()(_ArgTypes&amp;&amp;... __args) const
+  {
+    return __invoke(get(),_VSTD::forward&lt;_ArgTypes...&gt;(__args)...);
+  }
+
+  …
+};
+
+template&lt;class _Tp&gt;
+reference_wrapper&lt;_Tp&gt;
+ref(_Tp&amp; __t)
+{
+  return reference_wrapper&lt;_Tp&gt;(__t);
+}
+
+template&lt;class _Tp&gt;
+reference_wrapper&lt;_Tp&gt;
+ref(reference_wrapper&lt;_Tp&gt;  __t)
+{
+  return ref(__t.get());
+}
+</code></pre></div></div>
+
+<p>std::ref和std::move很有意思，这两个都是函数解决的问题很类似</p>
+
+<ul>
+  <li>std::ref解决了按值传递下传递左值引用</li>
+  <li>std::move解决了按引用传递下传递左值/左值引用</li>
+</ul>
+
+<h2 id="移动语义">移动语义</h2>
+
+<p>移动的源代码非常简单</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template &lt;class _Tp&gt;
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+typename remove_reference&lt;_Tp&gt;::type&amp;&amp;
+move(_Tp&amp;&amp; __t) _NOEXCEPT
+{
+    typedef _LIBCPP_NODEBUG_TYPE typename remove_reference&lt;_Tp&gt;::type _Up;
+    return static_cast&lt;_Up&amp;&amp;&gt;(__t);
+}
+</code></pre></div></div>
+
+<p>这里的是MacOS下的标准库里的。利用模板的右值引用形参和引用折叠规则，推导出_Tp类型，然后用萃取器remove_reference获得无引用类型，然后强制类型转换为右值引用。本质就是std::move可以把左值引用和左值转换成右值，如果给右值本质上是不做任何动作的。</p>
+
+<p>那么移动语义std::move的主要作用是什么呢？从语法上讲是生成了左值引用的右值！从功能上讲是帮助实现了移动赋值运算符，实现了转移资源所有权，本质上还是进行了一次拷贝的！</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   T operator=(T&amp;)
+   T operator=(const T&amp;)
+</code></pre></div></div>
+
+<p>传统的拷贝复制，参数是const T&amp;也就是常左值引用，有非常大的局限性，不能在拷贝过程中修改源对象的内部成员。但是转移所有权的时候，是可能有要求的，典型的比如std::unique_ptr在移动过程中，需要把内部的指针变量置空，然后再调用析构函数，如果拷贝复制的话因为限定了const是不能够操作的。</p>
+
+<p>总结一下就是这两种拷贝赋值都存在不足，第一个不能接受右值，第二个拷贝过程中不能修改源对象，无法实现资源转移。</p>
+
+<h2 id="type-traits-1">Type Traits</h2>
+
+<p>标签分发，典型的就是STL中的各种算法，根据iterator_category_tag的不同来执行不同的操作</p>
+
+<p>谓词的实现，都是继承自true_type和false_type，都是以is开头的，比如is_same_v</p>
 
 	</div>
 </article>

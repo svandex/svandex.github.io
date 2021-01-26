@@ -12,12 +12,12 @@
 	
 
 	
-	<meta property="og:title" content="斯旺达克 • UE4/Hololens2源码剖析">
+	<meta property="og:title" content="斯旺达克 • UE4/Hololens2/UxT源码剖析">
 	
 
 	<link rel="icon" href="/favicon.png" type="image/png">
 
-	<title>UE4/Hololens2源码剖析</title>
+	<title>UE4/Hololens2/UxT源码剖析</title>
 	<meta name="description" content="我看的源码版本是4.25，后续版本中的内容和本文是否一致是不能保证的。所以本文主要介绍看源码的方法或者说顺序，读者要能够自行跟着文章阅读源码，才能够真正理解。看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKey...">
 
 <!--
@@ -50,7 +50,7 @@
 		<span>发表于 </span><span class="post-meta">2020年09月26日</span>
 	</div>
 
-	<h1 class="post-title" itemprop="name headline">UE4/Hololens2源码剖析</h1>
+	<h1 class="post-title" itemprop="name headline">UE4/Hololens2/UxT源码剖析</h1>
 </header>
 
 <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
@@ -59,7 +59,7 @@
 
 <p>看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKeypoint，其实在最新的4.25版本的引擎中已经改为HMDHandJoint了。所以看源码才能真正获得正确的类型名称或者函数名称。</p>
 
-<p>12月8日更新：微软又出了OpenXR支持<a href="https://github.com/microsoft/Microsoft-OpenXR-Unreal">插件</a>，而且虚幻官方说UE5将仅支持OpenXR的开发，所以我这篇文章再更新一波关于OpenXR的插件的源码剖析。微软新推出的插件只支持4.26版本以上，正好是随着4.26版本推出插件的，所以这个插件非常的新，12月4日才在GitHub上发布的。</p>
+<p>12月8日更新：微软又出了OpenXR支持<a href="https://github.com/microsoft/Microsoft-OpenXR-Unreal">插件</a>，而且虚幻官方说UE5将仅支持OpenXR的开发，但是并不是会影响我们使用UxT工具的，目前UxT版本是0.11，我这篇文章的UxT和其他大多数模块知识依然有效，但是Augmented Reality和HoloLensAR这两个模块，在4.26里面被移除了。</p>
 
 <h1 id="抽象层级">抽象层级</h1>
 
