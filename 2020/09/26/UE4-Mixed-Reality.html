@@ -12,12 +12,12 @@
 	
 
 	
-	<meta property="og:title" content="斯旺达克 • UE4/Hololens2/UxT源码剖析">
+	<meta property="og:title" content="斯旺达克 • HoloLens2开发之UE4/UxT源码剖析">
 	
 
 	<link rel="icon" href="/favicon.png" type="image/png">
 
-	<title>UE4/Hololens2/UxT源码剖析</title>
+	<title>HoloLens2开发之UE4/UxT源码剖析</title>
 	<meta name="description" content="我看的源码版本是4.25，后续版本中的内容和本文是否一致是不能保证的。所以本文主要介绍看源码的方法或者说顺序，读者要能够自行跟着文章阅读源码，才能够真正理解。看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKey...">
 
 <!--
@@ -50,7 +50,7 @@
 		<span>发表于 </span><span class="post-meta">2020年09月26日</span>
 	</div>
 
-	<h1 class="post-title" itemprop="name headline">UE4/Hololens2/UxT源码剖析</h1>
+	<h1 class="post-title" itemprop="name headline">HoloLens2开发之UE4/UxT源码剖析</h1>
 </header>
 
 <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
@@ -736,16 +736,6 @@ DEFINE_LOG_CATEGORY(&lt;LogName&gt;);
 </code></pre></div></div>
 
 <p>自己写的代码编译成了模块，在Binaries文件夹中，有时候有些类重新改了名字，但是Editor中不会刷新，这时候需要删掉编译的二进制模块，重新编译生成才会刷新。</p>
-
-<h1 id="openxr">OpenXR</h1>
-
-<p>如果你查看微软的OpenXR插件中的MicrosoftOpenXR.Build.cs文件可以看到如下插件</p>
-
-<ul>
-  <li>OpenXRHMD</li>
-  <li>OpenXRAR</li>
-  <li>MicrosoftOpenXRRuntimeSettings</li>
-</ul>
 
 
 	</div>

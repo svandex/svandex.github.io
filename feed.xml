@@ -6,8 +6,8 @@
 </description>
     <link>https://svandex.github.io/</link>
     <atom:link href="https://svandex.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 26 Jan 2021 11:56:01 +0000</pubDate>
-    <lastBuildDate>Tue, 26 Jan 2021 11:56:01 +0000</lastBuildDate>
+    <pubDate>Wed, 27 Jan 2021 08:10:02 +0000</pubDate>
+    <lastBuildDate>Wed, 27 Jan 2021 08:10:02 +0000</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -69,7 +69,7 @@
       </item>
     
       <item>
-        <title>UE4/Hololens2/UxT源码剖析</title>
+        <title>HoloLens2开发之UE4/UxT源码剖析</title>
         <description>&lt;p&gt;我看的源码版本是4.25，后续版本中的内容和本文是否一致是不能保证的。所以本文主要介绍看源码的方法或者说顺序，读者要能够自行跟着文章阅读源码，才能够真正理解。&lt;/p&gt;
 
 &lt;p&gt;看源码有个很重要的原因是，即是微软和Epic的官方文档也会陈旧，有些类型名称过时了。目前我发现的就是手关节名称的类型，在老旧的文档里是UWMRHandKeypoint，其实在最新的4.25版本的引擎中已经改为HMDHandJoint了。所以看源码才能真正获得正确的类型名称或者函数名称。&lt;/p&gt;
@@ -752,16 +752,6 @@ DEFINE_LOG_CATEGORY(&amp;lt;LogName&amp;gt;);
 
 &lt;p&gt;自己写的代码编译成了模块，在Binaries文件夹中，有时候有些类重新改了名字，但是Editor中不会刷新，这时候需要删掉编译的二进制模块，重新编译生成才会刷新。&lt;/p&gt;
 
-&lt;h1 id=&quot;openxr&quot;&gt;OpenXR&lt;/h1&gt;
-
-&lt;p&gt;如果你查看微软的OpenXR插件中的MicrosoftOpenXR.Build.cs文件可以看到如下插件&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;OpenXRHMD&lt;/li&gt;
-  &lt;li&gt;OpenXRAR&lt;/li&gt;
-  &lt;li&gt;MicrosoftOpenXRRuntimeSettings&lt;/li&gt;
-&lt;/ul&gt;
-
 </description>
         <pubDate>Sat, 26 Sep 2020 10:08:00 +0000</pubDate>
         <link>https://svandex.github.io/2020/09/26/UE4-Mixed-Reality.html</link>
@@ -1222,7 +1212,7 @@ struct integral_constant {
 &lt;h1 id=&quot;容器&quot;&gt;容器&lt;/h1&gt;
 &lt;h2 id=&quot;vector&quot;&gt;vector&lt;/h2&gt;
 
-&lt;p&gt;增删困难，查改方便，迭代器可以用指针替代。但是比较特别的是vector&lt;bool&gt;并不是容器，因为该类型是按照比特位来存储bool值的，但是指针操作最小也是指向字节，因此没有办法通过指针操作进行赋值和解引用，&lt;/bool&gt;&lt;/p&gt;
+&lt;p&gt;增删困难，查改方便，迭代器可以用指针替代。但是比较特别的是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vector&amp;lt;bool&amp;gt;&lt;/code&gt;并不是容器，因为该类型是按照比特位来存储bool值的，但是指针操作最小也是指向字节，因此没有办法通过指针操作进行赋值和解引用，&lt;/p&gt;
 
 &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;using _Vbase = unsigned int; // word type for vector&amp;lt;bool&amp;gt; representation
 
@@ -1233,7 +1223,7 @@ template&amp;lt;class _Alloc, cllass _Value_type&amp;gt;
 using _Rebind_alloct_t = tpyename allocator_traits&amp;lt;_Alloc&amp;gt;::template rebind_alloc&amp;lt;_Value_type&amp;gt;;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;尽可能不要使用vector&lt;bool&gt;，或者使用deque&lt;bool&gt;替代。&lt;/bool&gt;&lt;/bool&gt;&lt;/p&gt;
+&lt;p&gt;尽可能不要使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vector&amp;lt;bool&amp;gt;&lt;/code&gt;，或者使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deque&amp;lt;bool&amp;gt;&lt;/code&gt;替代。&lt;/p&gt;
 
 &lt;h2 id=&quot;list&quot;&gt;list&lt;/h2&gt;
 
@@ -1473,7 +1463,7 @@ _NON_MEMBER_CALL(_PTR_FUN, X1, X2, X3)
 
 &lt;h2 id=&quot;基于流的io&quot;&gt;基于流的IO&lt;/h2&gt;
 
-&lt;p&gt;最基础的ios_base类仅有私有成员，主要处理IO状态，IO异常，格式化，时间，本地化等。&lt;/p&gt;
+&lt;p&gt;最基础的ios_base类仅有私有成员，主要处理IO状态，IO异常，IO格式化，IO事件，本地化等。&lt;/p&gt;
 
 &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;template&amp;lt;_Dummy&amp;gt;
 class _Iosb
@@ -1579,16 +1569,72 @@ protected:
 
 &lt;ul&gt;
   &lt;li&gt;左值和右值是按照等号两边来区分的&lt;/li&gt;
-  &lt;li&gt;左值引用和右值引用都是左值&lt;/li&gt;
+  &lt;li&gt;左值引用和右值引用都是左值，因为引用就是T* const，也是占用内存的&lt;/li&gt;
   &lt;li&gt;有名字的右值引用是左值；右值引用还能是右值，std::move就是生成右值引用的右值。&lt;/li&gt;
   &lt;li&gt;常左值引用既可以接受左值，又可以接受右值。&lt;/li&gt;
+  &lt;li&gt;左值引用和右值引用作为右值按引用传递参数时会退化为类型本身，std::decay_t在编译期实现了类似功能&lt;/li&gt;
+  &lt;li&gt;右值引用是有可能延长引用对象生存期的，可能放在堆上&lt;/li&gt;
   &lt;li&gt;模板中有引用折叠概念&lt;/li&gt;
-  &lt;li&gt;左值引用和右值引用的左值作为右值传递参数时会退化，std::decay_t在编译期实现了类似功能&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;为什么要发明右值引用呢！因为要帮助实现移动语义，也就是移动构造/赋值。std::move可以生成右值引用的右值。&lt;/p&gt;
+&lt;p&gt;退化可以这么理解，因为按引用传递需要引用对象，因此T&amp;amp;或T&amp;amp;&amp;amp;引用需要退化为类型T本身。&lt;/p&gt;
 
-&lt;p&gt;可调用对象的构造是按值传递的，调用拷贝赋值运算符，左值引用不能成为右值，所以要用std::reference_wrapper生成右值传递，然后再隐式转换为左值。&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#include &amp;lt;memory&amp;gt;
+#include &amp;lt;cstdio&amp;gt;
+
+struct A
+{
+  char x;
+  int y;
+  void print()
+  {
+    printf(&quot;x,y is %c,%d\n&quot;,x,y);
+  }
+};
+
+void f(A&amp;amp;&amp;amp; a)
+{
+  a.printf();
+}
+
+int main(){
+  A ax = {'a',1};
+  A&amp;amp; bx = ax;
+  A&amp;amp;&amp;amp; cx = std::move(ax);
+  A&amp;amp;&amp;amp; dx = std::move(A{'b',2});
+  //A&amp;amp;&amp;amp; ex = bx; //bx是左值引用A&amp;amp;的左值，这里退化为ax还是左值，不能绑定到右值引用
+  //A&amp;amp;&amp;amp; fx = dx; //dx是右值引用A&amp;amp;&amp;amp;的左值，这里退化为ax还是左值，不能绑定到右值引用
+  A&amp;amp; gx = bx;
+  A&amp;amp;&amp;amp; hx = A{'c',3};
+
+  //打印
+  ax.print();
+  bx.print();
+  cx.print();
+  dx.print();
+  //ex.print();
+  //fx.print();
+  gx.print();
+  hx.print();
+
+  //无论传递A&amp;amp;还是A&amp;amp;&amp;amp;的左值，编译时错误信息都是A类型不能绑定到A&amp;amp;&amp;amp;，所以是退化过的
+  //f(bx);
+  //f(cx);
+
+  return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;指针和引用的区别：看了很多人的说法，还是很模糊的。比较好的说法是，从C++语言层面看引用是T* const，但是从机器码层面两者是没有区别的，且也很难界定，因为机器码只操作地址。&lt;/p&gt;
+
+&lt;p&gt;为什么要发明右值引用呢！&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;实现万能引用，无论什么T类型，T&amp;amp;&amp;amp;都是引用，从而实现编译期计算（结合《深入理解C++对象模型》的计算偏移量功能），编译期是没有堆栈的，无法有个能够取地址的对象。&lt;/li&gt;
+  &lt;li&gt;要帮助实现移动语义，也就是移动构造/赋值。std::move可以生成右值引用的右值。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;可调用对象的构造是按值传递的，调用拷贝赋值运算符，左值引用不能成为右值，所以要用std::reference_wrapper生成右值传递，然后再隐式转换为左值。可看我后续文章有介绍。&lt;/p&gt;
 
 &lt;p&gt;常见的std::thread就是接受可调用对象，还有通过std::bind生成可调用对象std::function，这两种情况下都要传递左值引用，需要通过std::ref来实现。&lt;/p&gt;
 
@@ -1639,8 +1685,22 @@ ref(reference_wrapper&amp;lt;_Tp&amp;gt;  __t)
 
 &lt;ul&gt;
   &lt;li&gt;std::ref解决了按值传递下传递左值引用&lt;/li&gt;
-  &lt;li&gt;std::move解决了按引用传递下传递左值/左值引用&lt;/li&gt;
+  &lt;li&gt;std::move解决了按右值引用传递下传递左值/左值引用&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h2 id=&quot;decltypestddeclval&quot;&gt;decltype/std::declval&lt;/h2&gt;
+
+&lt;p&gt;这个函数只有定义没有实现，因为运行期这个函数没用，只能用于编译期。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;template&amp;lt;class T&amp;gt;
+typename std::add_rvalue_reference&amp;lt;T&amp;gt;::type declval() noexcept;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;其实就是返回了右值引用，本质上是编译期T类型已经编译成二进制，因此可以不在运行时构造该对象，而知道其成员数据的类型，或者成员函数的返回类型。通常是配合decltype来一起用的。&lt;/p&gt;
+
+&lt;p&gt;这里有个很有意思的问题，为什么不用std::add_lvalue_reference_t来实现呢？用T类型本身肯定是不行的，因为编译期不会构造对象。那么T&amp;amp;和T&amp;amp;&amp;amp;之间的抉择，为什么选择了万能引用？因为模板参数T可能本身就是引用！所以万能引用保证了推导出来的必定是引用！&lt;/p&gt;
+
+&lt;p&gt;只要是引用就可以不用真的构造对象，而知道该类型的相关信息。非常的经典！&lt;/p&gt;
 
 &lt;h2 id=&quot;移动语义&quot;&gt;移动语义&lt;/h2&gt;
 
@@ -1673,6 +1733,17 @@ move(_Tp&amp;amp;&amp;amp; __t) _NOEXCEPT
 &lt;p&gt;标签分发，典型的就是STL中的各种算法，根据iterator_category_tag的不同来执行不同的操作&lt;/p&gt;
 
 &lt;p&gt;谓词的实现，都是继承自true_type和false_type，都是以is开头的，比如is_same_v&lt;/p&gt;
+
+&lt;h2 id=&quot;void函数返回&quot;&gt;void函数返回&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;void f(int&amp;amp; x)
+{
+  return x==0?void():(printf(&quot;%d&quot;,x),f(--x));
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;利用return来实现递归，很有意思。&lt;/p&gt;
 </description>
         <pubDate>Wed, 29 Jul 2020 14:23:00 +0000</pubDate>
         <link>https://svandex.github.io/2020/07/29/STL-Source-Code-Windows.html</link>
