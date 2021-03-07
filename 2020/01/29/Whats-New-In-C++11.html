@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#483D8B">
+
+	
+	<meta property="og:image" content="https://svandex.github.io/thumbnail.jpg">
+	
+
+	
+	<meta property="og:title" content="斯旺达克 • 源码剖析之C++11新特性">
+	
+
+	<link rel="icon" href="/favicon.png" type="image/png">
+
+	<title>源码剖析之C++11新特性</title>
+	<meta name="description" content="最近出去面试了一下，感觉对自己的触动挺大的，就是很多细节的问题自己并没有研究很深，源码阅读不够。有个问题是C++11有什么新功能？我当时有点脑袋空空，后来回来我想自己确实应该总结一下。C++11新特性当有人问C++11有什么新东西的时候，我总结起来有以下部分  原子操作库  多线程库  正则表达式库  std::...">
+
+<!--
+	<link rel='stylesheet' id='libretto-fonts-css'  href='https://fonts.googleapis.com/css?family=Libre+Baskerville%3A400%2C700%2C400italic%7CPlayfair+Display%3A400%2C700%2C400italic%2C700italic%7CPlayfair+Display+SC%3A700%2C700italic%7CMontserrat%3A400%7CDroid+Sans+Mono%3A400&#038;subset=latin%2Clatin-ext' type='text/css' media='all'>
+-->
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="canonical" href="https://svandex.github.io/2020/01/29/Whats-New-In-C++11.html">
+	<link rel="alternate" type="application/rss+xml" title="斯旺达克" href="https://svandex.github.io/feed.xml">
+</head>
+
+
+<body>
+
+	
+		<header class="site-header">
+
+	<div class="wrapper">
+
+		<a class="site-title" href="/">斯旺达克</a>
+
+	</div>
+
+</header>
+
+	
+	<div class="page-content">
+		<div class="wrapper">
+			<header class="post-header">
+	<div>
+		<span>发表于 </span><span class="post-meta">2020年01月29日</span>
+	</div>
+
+	<h1 class="post-title" itemprop="name headline">源码剖析之C++11新特性</h1>
+</header>
+
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<div class="entry-content" itemprop="articleBody">
+		<p>最近出去面试了一下，感觉对自己的触动挺大的，就是很多细节的问题自己并没有研究很深，源码阅读不够。有个问题是C++11有什么新功能？我当时有点脑袋空空，后来回来我想自己确实应该总结一下。</p>
+
+<h2 id="c11新特性">C++11新特性</h2>
+
+<p>当有人问C++11有什么新东西的时候，我总结起来有以下部分</p>
+
+<ul>
+  <li>原子操作库</li>
+  <li>多线程库</li>
+  <li>正则表达式库</li>
+  <li>std::function</li>
+  <li>std::array</li>
+  <li>std::initializer_list</li>
+  <li>std::tuple</li>
+  <li>萃取器(type traits)</li>
+  <li>移动语义和值分类(value category)</li>
+</ul>
+
+<p>其中最后的两块，我觉得是最为经典和基础的，这两款不理解是没法理解模板的，也就更无从谈起标准库了。</p>
+
+<h2 id="值分类引用">值分类、引用</h2>
+
+<p>值分类是个很有意思的东西；</p>
+
+<ul>
+  <li>左值和右值是按照等号两边来区分的</li>
+  <li>左值引用和右值引用都是左值，语法上理解引用就是T* const</li>
+  <li>有名字的右值引用是左值；右值引用还能是右值，std::move就是生成右值引用的右值。</li>
+  <li>常左值引用既可以接受左值，又可以接受右值。</li>
+  <li>左值引用和右值引用作为右值按引用传递参数时会退化为引用的对象本身，std::decay_t在编译期实现了类似功能</li>
+  <li>右值引用是有可能延长引用对象生存期的，可能放在堆上</li>
+  <li>模板中有引用折叠概念，且大量使用</li>
+</ul>
+
+<p>退化可以这么理解，因为按引用传递需要引用对象，因此T&amp;或T&amp;&amp;引用需要退化为类型T本身。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;memory&gt;
+#include &lt;cstdio&gt;
+
+struct A
+{
+  char x;
+  int y;
+  void print()
+  {
+    printf("x,y is %c,%d\n",x,y);
+  }
+};
+
+void f(A&amp;&amp; a)
+{
+  a.printf();
+}
+
+int main(){
+  A ax = {'a',1};
+  A&amp; bx = ax;
+  A&amp;&amp; cx = std::move(ax);
+  A&amp;&amp; dx = std::move(A{'b',2});
+  //A&amp;&amp; ex = bx; //bx是左值引用A&amp;的左值，这里退化为ax还是左值，不能绑定到右值引用
+  //A&amp;&amp; fx = dx; //dx是右值引用A&amp;&amp;的左值，这里退化为ax还是左值，不能绑定到右值引用
+  A&amp; gx = bx;
+  A&amp;&amp; hx = A{'c',3};
+
+  //打印
+  ax.print();
+  bx.print();
+  cx.print();
+  dx.print();
+  //ex.print();
+  //fx.print();
+  gx.print();
+  hx.print();
+
+  //无论传递A&amp;还是A&amp;&amp;的左值，编译时错误信息都是A类型不能绑定到A&amp;&amp;，所以是退化过的
+  //f(bx);
+  //f(cx);
+
+  return 0;
+}
+</code></pre></div></div>
+
+<p>指针和引用的区别：看了很多人的说法，还是很模糊的。比较好的说法是，从C++语言层面看引用是T* const，但是从机器码层面两者是没有区别的，且也很难界定，因为机器码只操作地址。</p>
+
+<p>为什么要发明右值引用呢！</p>
+
+<ul>
+  <li>实现通用引用(Universal Reference)，无论什么T类型，T&amp;&amp;都是引用，从而实现编译期计算（结合《深入理解C++对象模型》的计算偏移量功能），编译期是没有堆栈的，无法有个能够取地址的对象。</li>
+  <li>要帮助实现移动语义，也就是移动构造/赋值。std::move可以生成右值引用的右值。</li>
+</ul>
+
+<h2 id="stdref和stdreference_wrapper">std::ref和std::reference_wrapper</h2>
+<p>std::ref生成右值std::reference_wrapper，然后再隐式转换为左值。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;class _Tp&gt;
+class reference_wrapper:public __weak_result_type&lt;_Tp&gt;
+{
+public:
+  using type = _Tp;
+  type* __f_;
+
+  operator type&amp; () const{return *__f_;};//隐式转换为左值，最重要功能！
+
+  //本身也是可调用对象
+  template &lt;class... _ArgTypes&gt;
+  typename __invoke_of&lt;type&amp;, _ArgTypes...&gt;::type
+  operator()(_ArgTypes&amp;&amp;... __args) const
+  {
+    return __invoke(get(),_VSTD::forward&lt;_ArgTypes...&gt;(__args)...);
+  }
+
+  …
+};
+
+template&lt;class _Tp&gt;
+reference_wrapper&lt;_Tp&gt;
+ref(_Tp&amp; __t)
+{
+  return reference_wrapper&lt;_Tp&gt;(__t);
+}
+
+template&lt;class _Tp&gt;
+reference_wrapper&lt;_Tp&gt;
+ref(reference_wrapper&lt;_Tp&gt;  __t)
+{
+  return ref(__t.get());
+}
+</code></pre></div></div>
+
+<p>这个函数的目的是解决函数式编程中的一些问题。在函数对象的生成中，如果你给左值引用，那么函数对象对应参数生成的是T*类型，而不是引用类型。所以左值引用是要包装器的。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;class _Fp, class ..._BoundArgs&gt;
+inline _LIBCPP_INLINE_VISIBILITY
+__bind&lt;_Fp, _BoundArgs...&gt;
+bind(_Fp&amp;&amp; __f, _BoundArgs&amp;&amp;... __bound_args)
+{
+    typedef __bind&lt;_Fp, _BoundArgs...&gt; type;
+    return type(_VSTD::forward&lt;_Fp&gt;(__f), _VSTD::forward&lt;_BoundArgs&gt;(__bound_args)...);
+}
+
+template&lt;class _Rp, class _Fp, class ..._BoundArgs&gt;
+inline _LIBCPP_INLINE_VISIBILITY
+__bind_r&lt;_Rp, _Fp, _BoundArgs...&gt;
+bind(_Fp&amp;&amp; __f, _BoundArgs&amp;&amp;... __bound_args)
+{
+    typedef __bind_r&lt;_Rp, _Fp, _BoundArgs...&gt; type;
+    return type(_VSTD::forward&lt;_Fp&gt;(__f), _VSTD::forward&lt;_BoundArgs&gt;(__bound_args)...);
+}
+
+</code></pre></div></div>
+
+<p>可以看到std::bind是完美转发给了type这个函数，返回的类型是__bind或者__bind_r。简单起见我们看看__bind的源码。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;class _Fp, class ...BoundArgs&gt;
+class __bind : public __weak_result_type&lt;typename decay_t&lt;_Fp&gt;&gt;
+{
+protected:
+    typedef typename decay_t&lt;_Fp&gt; _Fd;
+    typedef tupble&lt;typename decay_t&lt;BoundArgs&gt;...&gt; __bound_args_;
+private:
+    _Fd __f_;
+    _Td __bound_args_;
+public:
+    ...
+    operator()(_Args&amp;&amp; ...__args)
+    {
+        return _VSTD::__apply_functor(__f_, __bound_args_, __indices(),
+                                   tuple&lt;_Args&amp;&amp;...&gt;(_VSTD::forward&lt;_Args&gt;(__args)...));
+    }
+};
+
+...
+__apply_functor(...)
+{
+  return _VSTD::__invoke(…);
+}
+</code></pre></div></div>
+
+<p>丛中可以发现生成的__bind类型的函数对象是将_Fp和BoundArgs参数包都退化处理的，所以参数都是按照拷贝赋值运算符进行的。</p>
+
+<p>可以发现std::bind的实现需要利用</p>
+
+<ul>
+  <li>std::forward</li>
+  <li>std::decay_t</li>
+  <li>std::tuple</li>
+  <li>std::invoke</li>
+</ul>
+
+<p>来实现，比较复杂。至于为什么std::bind传递参数的时候不能直接用&amp;t，而必须用std::ref，是因为形参是&amp;t则推导出类型是T*而不是T&amp;，那么函数对象的类型和函数指针是不匹配的，会发生无模板匹配的编译期错误。</p>
+
+<p>其实std::thread的实现也是的，先要退化推导出来的类型，然后用std::tuple将所有的参数类型（包括返回类型）都装起来，然后通过std::invoke进行调用。</p>
+
+<h1 id="stdforward和stdmove">std::forward和std::move</h1>
+
+<p>std::forward和std::move很有意思，两者的函数实现都是强制类型转换</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// forward
+template &lt;class _Tp&gt;
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+_Tp&amp;&amp;
+forward(typename remove_reference&lt;_Tp&gt;::type&amp; __t) _NOEXCEPT
+{
+    return static_cast&lt;_Tp&amp;&amp;&gt;(__t);
+}
+
+template &lt;class _Tp&gt;
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+_Tp&amp;&amp;
+forward(typename remove_reference&lt;_Tp&gt;::type&amp;&amp; __t) _NOEXCEPT
+{
+    static_assert(!is_lvalue_reference&lt;_Tp&gt;::value,
+                  "can not forward an rvalue as an lvalue");
+    return static_cast&lt;_Tp&amp;&amp;&gt;(__t);
+}
+
+// move
+template &lt;class _Tp&gt;
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+typename remove_reference&lt;_Tp&gt;::type&amp;&amp;
+move(_Tp&amp;&amp; __t) _NOEXCEPT
+{
+    typedef _LIBCPP_NODEBUG_TYPE typename remove_reference&lt;_Tp&gt;::type _Up;
+    return static_cast&lt;_Up&amp;&amp;&gt;(__t);
+}
+</code></pre></div></div>
+
+<p>但是两者还是有区别的</p>
+
+<ul>
+  <li>std::forward，左值引用到左值引用，右值引用到右值引用</li>
+  <li>std::move，通用引用到右值引用</li>
+</ul>
+
+<h2 id="decltypestddeclval">decltype/std::declval</h2>
+
+<p>这个函数只有定义没有实现，因为运行期这个函数没用，只能用于编译期。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template&lt;class T&gt;
+typename std::add_rvalue_reference_t&lt;T&gt; declval() noexcept;
+</code></pre></div></div>
+
+<p>其实就是返回了右值引用，本质上是编译期T类型已经编译成二进制，因此可以不在运行时构造该对象，而知道其成员数据的类型，或者成员函数的返回类型。通常是配合decltype来一起用的。</p>
+
+<p>这里有个很有意思的问题，为什么不用std::add_lvalue_reference_t来实现呢？用T类型本身肯定是不行的，因为编译期不会构造对象。那么T&amp;和T&amp;&amp;之间的抉择，为什么选择了万能引用？因为模板参数T可能本身就是引用！所以万能引用保证了推导出来的必定是引用！</p>
+
+<p>只要是引用就可以不用真的构造对象，而知道该类型的相关信息。非常的经典！</p>
+
+<h2 id="移动语义">移动语义</h2>
+
+<p>移动的源代码非常简单</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>template &lt;class _Tp&gt;
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_CONSTEXPR
+typename remove_reference&lt;_Tp&gt;::type&amp;&amp;
+move(_Tp&amp;&amp; __t) _NOEXCEPT
+{
+    typedef _LIBCPP_NODEBUG_TYPE typename remove_reference&lt;_Tp&gt;::type _Up;
+    return static_cast&lt;_Up&amp;&amp;&gt;(__t);
+}
+</code></pre></div></div>
+
+<p>这里的是MacOS下的标准库里的。利用模板的右值引用形参和引用折叠规则，推导出_Tp类型，然后用萃取器remove_reference获得无引用类型，然后强制类型转换为右值引用。本质就是std::move可以把左值引用和左值转换成右值，如果给右值本质上是不做任何动作的。</p>
+
+<p>那么移动语义std::move的主要作用是什么呢？从语法上讲是生成了左值引用的右值！从功能上讲是帮助实现了移动赋值运算符，实现了转移资源所有权，本质上还是进行了一次拷贝的！</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   T operator=(T&amp;)
+   T operator=(const T&amp;)
+</code></pre></div></div>
+
+<p>传统的拷贝复制，参数是const T&amp;也就是常左值引用，有非常大的局限性，不能在拷贝过程中修改源对象的内部成员。但是转移所有权的时候，是可能有要求的，典型的比如std::unique_ptr在移动过程中，需要把内部的指针变量置空，然后再调用析构函数，如果拷贝复制的话因为限定了const是不能够操作的。</p>
+
+<p>总结一下就是这两种拷贝赋值都存在不足，第一个不能接受右值，第二个拷贝过程中不能修改源对象，无法实现资源转移。</p>
+
+<h2 id="type-traits">Type Traits</h2>
+
+<p>标签分发，典型的就是STL中的各种算法，根据iterator_category_tag的不同来执行不同的操作</p>
+
+<p>谓词的实现，都是继承自true_type和false_type，都是以is开头的，比如is_same_v</p>
+
+<h2 id="void函数返回">void函数返回</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void f(int&amp; x)
+{
+  return x==0?void():(printf("%d",x),f(--x));
+}
+
+</code></pre></div></div>
+
+<p>利用return来实现递归，很有意思。</p>
+
+	</div>
+</article>
+
+<div id="post-nav">
+	<div class="next">
+		
+		<a href="/2020/03/11/video-audio-and-food.html">
+			<span>下一篇</span>
+			美食和影音
+		</a>
+		
+	</div>
+
+	<div class="previous">
+		
+		<a href="/2020/01/18/reading-plan-in-2020.html">
+			<span>上一篇</span>
+			2020年读书计划
+		</a>
+		
+	</div>
+</div>
+
+		</div>
+	</div>
+
+	<footer class="site-footer">
+
+	<div class="wrapper" style="text-align: center">
+		<p class="rss-subscribe" style="font-size: 12px;">建议安装Noto Sans SC字体浏览博客
+&nbsp;&nbsp;<a href="/feed.xml">订阅</a><br/>
+		© 2015 - 2021</p>
+
+<!--
+		<div class="footer-col-wrapper">
+			<div class="footer-col footer-col-1">
+				<ul class="contact-list">
+					<li><p class="rss-subscribe"><a href="/feed.xml">订阅</a></p></li>
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-2">
+				<ul class="social-media-list">
+					
+					<li>
+						<a href="https://github.com/svandex"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">svandex</span></a>
+
+					</li>
+					
+
+					
+
+					
+				</ul>
+			</div>
+
+			<div class="footer-col footer-col-3">
+				<p>建议安装Noto Sans SC字体浏览博客
+</p>
+			</div>
+		</div>
+-->
+	</div>
+
+</footer>
+
+</body>
+
+</html>
