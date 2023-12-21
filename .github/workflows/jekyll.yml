@@ -48,6 +48,7 @@ jobs:
           repository: svandex/blog
           path: _post
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
+          ref: main
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
