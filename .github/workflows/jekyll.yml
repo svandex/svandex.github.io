@@ -52,7 +52,10 @@ jobs:
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
           ref: main
       - name: Install Jekyll
-        run: gem install jekyll bundler github-pages
+        run: 
+          gem install sass
+          gem install sass-embedded --force
+          gem install jekyll bundler github-pages
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
