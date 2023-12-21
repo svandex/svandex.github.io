@@ -45,8 +45,8 @@ jobs:
       - name: Clone Posts
         uses: actions/checkout@v4
         with: 
-          repository: 'svandex/blog'
-          path: '_post'
+          repository: svandex/blog
+          path: _post
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
