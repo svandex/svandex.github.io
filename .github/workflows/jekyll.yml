@@ -42,6 +42,11 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
+      - name: Clone Theme
+        uses: actions/checkout@v4
+        with:
+          repository: svandex/jekyll-theme
+          ref: gh-pages
       - name: Clone Posts To Target Directory
         uses: actions/checkout@v4
         with: 
