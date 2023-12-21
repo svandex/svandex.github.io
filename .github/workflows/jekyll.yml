@@ -39,20 +39,20 @@ jobs:
           ruby-version: '3.1' # Not needed with a .ruby-version file
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
           cache-version: 0 # Increment this number if you need to re-download cached gems
-      - name: Install Jekyll
-        run: gem install jekyll bundler
       - name: Clone Theme
         uses: actions/checkout@v4
         with:
           repository: svandex/jekyll-theme
           ref: gh-pages
-      - name: Clone Posts To Target Directory
+      - name: Clone Posts
         uses: actions/checkout@v4
         with: 
           repository: svandex/blog
           path: _post
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
           ref: main
+      - name: Install Jekyll
+        run: gem install jekyll bundler github-pages
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
