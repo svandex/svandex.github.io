@@ -52,7 +52,7 @@ jobs:
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
           ref: main
       - name: Install Jekyll
-        run: 
+        run: |
           gem install sass
           gem install sass-embedded --force
           gem install jekyll bundler github-pages
