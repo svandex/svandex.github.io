@@ -42,7 +42,7 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
-      - name: Clone Posts
+      - name: Clone Posts To Target Directory
         uses: actions/checkout@v4
         with: 
           repository: svandex/blog
