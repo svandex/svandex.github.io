@@ -48,9 +48,10 @@ jobs:
         uses: actions/checkout@v4
         with: 
           repository: svandex/blog
-          path: _post
           token: ${{ secrets.TOKEN_GITHUB_PAGES }}
           ref: main
+      - name: Move Posts
+        run: mv blog/_posts svandex.github.io/
       - name: Install Jekyll
         run: |
           gem install sass
